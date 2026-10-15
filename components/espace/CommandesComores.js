@@ -13,7 +13,10 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
+import { ClipboardList, Bell, Phone, MessageCircle, Bike, TriangleAlert, ArrowLeft } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 import { dateLocale, formatDateCourte, referenceEnvoi } from '@/lib/envois'
 import {
@@ -85,7 +88,7 @@ function situation(c) {
 /* Où en est CHAQUE ligne de la commande */
 function avancement(l) {
   if (l.etat === 'retiree') return { texte: 'Retiré de la commande', ton: 'gris' }
-  if (l.etat === 'indisponible') return { texte: '⚠️ Indisponible chez le fournisseur', ton: 'rouge' }
+  if (l.etat === 'indisponible') return { texte: 'Indisponible chez le fournisseur', ton: 'rouge' }
   if (!l.envoi_numero) return { texte: 'Pas encore acheté', ton: 'gris' }
   const ref = referenceEnvoi({ numero: l.envoi_numero })
   if (l.envoi_statut === 'brouillon') return { texte: `En préparation dans ${ref}`, ton: 'gris' }
@@ -95,7 +98,7 @@ function avancement(l) {
   }
   const recu = Number(l.quantite_recue) || 0
   const incomplet = recu < Number(l.quantite)
-  return { texte: `Reçu : ${recu}/${l.quantite}${incomplet ? ' ⚠️ incomplet' : ''}`, ton: incomplet ? 'rouge' : 'vert' }
+  return { texte: `Reçu : ${recu}/${l.quantite}${incomplet ? ' (incomplet)' : ''}`, ton: incomplet ? 'rouge' : 'vert' }
 }
 
 /* ═══════════════════════ LISTE ═══════════════════════ */
@@ -139,17 +142,14 @@ export function CommandesListe({ commandes, onOuvrir }) {
       <input
         type="search"
         className="input cc-recherche"
-        placeholder="🔍 N° de commande, nom ou téléphone…"
+        placeholder="N° de commande, nom ou téléphone"
         aria-label="Chercher une commande"
         value={recherche}
         onChange={(e) => setRecherche(e.target.value)}
       />
 
       {liste.length === 0 ? (
-        <div className="vide">
-          <div className="vide-emoji">📋</div>
-          {recherche ? 'Aucune commande ne correspond.' : 'Aucune commande dans cette liste.'}
-        </div>
+        <EtatVide icone={ClipboardList} texte={recherche ? 'Aucune commande ne correspond.' : 'Aucune commande dans cette liste.'} />
       ) : (
         liste.map((c) => <CarteCommande key={c.id} commande={c} onOuvrir={() => onOuvrir(c.id)} />)
       )}
@@ -169,7 +169,7 @@ function CarteCommande({ commande: c, onOuvrir }) {
       <span className="cc-haut">
         <b className="cc-ref">{referenceCommande(c.numero)}</b>
         <span className={`badge badge-${statut.ton}`}>{statut.label}</span>
-        {relancee && <span className="badge badge-or">🔔 Relancée</span>}
+        {relancee && <span className="badge badge-or"><Icone icone={Bell} taille={16} /> Relancée</span>}
       </span>
       <span className="cc-ligne cc-fort">
         {c.client?.nom} · {c.client?.telephone} · {labelIle(c.ile)}
@@ -270,7 +270,7 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
     <section aria-labelledby="titre-commande">
       <style href="commandes-comores" precedence="default">{css}</style>
 
-      <button onClick={onRetour} className="btn-secondary cc-retour">← Retour</button>
+      <button onClick={onRetour} className="btn-secondary cc-retour"><Icone icone={ArrowLeft} taille={18} /> Retour</button>
 
       <div className="cc-entete">
         <h1 id="titre-commande" className="page-title">{ref}</h1>
@@ -290,9 +290,9 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
         <p className="cc-client">{telephone}</p>
         <p className="cc-client">{labelIle(c.ile)}{c.adresse_livraison ? ` · ${c.adresse_livraison}` : ''}</p>
         <div className="cc-boutons">
-          <a href={`tel:${telephone}`} className="btn-secondary">📞 Appeler</a>
+          <a href={`tel:${telephone}`} className="btn-secondary"><Icone icone={Phone} taille={18} /> Appeler</a>
           <a href={lienWhatsApp(telephone, messageWhatsAppClient(c))} target="_blank" rel="noopener noreferrer"
-            className="btn-secondary">💬 WhatsApp</a>
+            className="btn-secondary"><Icone icone={MessageCircle} taille={18} /> WhatsApp</a>
         </div>
       </div>
 
@@ -309,7 +309,7 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
                 placeholder="Ex : le client s'impatiente"
                 onChange={(e) => setMessageRelance(e.target.value)} />
               <button onClick={relancer} disabled={occupe} className="btn-secondary cc-bouton">
-                🔔 Relancer l&apos;étranger
+                <Icone icone={Bell} taille={18} /> Relancer l&apos;étranger
               </button>
             </>
           )}
@@ -320,7 +320,7 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
       {(c.statut === 'arrivee' || c.statut === 'echec_livraison') && (
         <div className="carte">
           <h2 className="carte-titre">Livraison</h2>
-          <button onClick={demarrer} disabled={occupe} className="btn-primary btn-large">🛵 Partir en livraison</button>
+          <button onClick={demarrer} disabled={occupe} className="btn-primary btn-large"><Icone icone={Bike} taille={18} /> Partir en livraison</button>
         </div>
       )}
 
@@ -436,27 +436,27 @@ const css = `
 
   .cc-carte {
     display: flex; flex-direction: column; align-items: flex-start; gap: 5px; width: 100%;
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px 16px;
+    background: #fff; border: 1px solid ${C.line}; border-radius: 12px; padding: 14px 16px;
     margin-bottom: 10px; cursor: pointer; text-align: left; font-family: inherit; color: ${C.inkDeep};
     min-height: 44px;
   }
   .cc-carte:hover { border-color: ${C.inkSoft}; }
   .cc-haut { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
   .cc-ref { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; }
-  .cc-ligne { font-size: 13px; }
+  .cc-ligne { font-size: 14px; }
   .cc-fort { font-weight: 700; }
   .cc-retard { color: ${C.clay}; }
-  .cc-bas { display: flex; justify-content: space-between; gap: 10px; width: 100%; margin-top: 4px; font-size: 13px; }
+  .cc-bas { display: flex; justify-content: space-between; gap: 10px; width: 100%; margin-top: 4px; font-size: 14px; }
   .cc-apercu { color: ${C.inkSoft}; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .cc-retour { margin-bottom: 14px; }
   .cc-entete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .cc-situation { font-size: 13.5px; color: ${C.inkSoft}; margin: 6px 0 14px; }
+  .cc-situation { font-size: 14px; color: ${C.inkSoft}; margin: 6px 0 14px; }
   .cc-client { margin: 0 0 4px; font-size: 14px; }
   .cc-boutons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
   .cc-bouton { margin-top: 12px; }
   .cc-info {
-    font-size: 13.5px; color: ${C.inkSoft}; background: ${C.sand}; border-radius: 10px;
+    font-size: 14px; color: ${C.inkSoft}; background: ${C.sand}; border-radius: 8px;
     padding: 11px 13px; margin: 0 0 12px; line-height: 1.5;
   }
   .cc-sous-bloc { margin-top: 14px; border-top: 1px solid ${C.line}; padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -467,14 +467,14 @@ const css = `
   .cc-lignes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .cc-ligne-produit { display: flex; align-items: center; gap: 12px; }
   .cc-thumb {
-    width: 46px; height: 46px; border-radius: 9px; overflow: hidden; flex-shrink: 0;
+    width: 46px; height: 46px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .cc-prod { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .cc-prod b { font-size: 14px; }
-  .cc-prod span { font-size: 12px; color: ${C.inkSoft}; }
+  .cc-prod span { font-size: 13px; color: ${C.inkSoft}; }
   .cc-prod .cc-av-rouge { color: ${C.clay}; font-weight: 700; }
   .cc-prod .cc-av-vert { color: ${C.leaf}; font-weight: 700; }
-  .cc-prod .cc-av-or { color: ${C.goldDeep}; font-weight: 700; }
+  .cc-prod .cc-av-or { color: #8a5a0b; font-weight: 700; }
   .cc-qte { font-size: 15px; font-weight: 800; flex-shrink: 0; }
 `

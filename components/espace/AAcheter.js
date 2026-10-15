@@ -13,7 +13,10 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
+import { ShoppingBag, Bell } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
 import { regrouperParProduit } from '@/lib/achats'
 import { referenceEnvoi, messageErreur } from '@/lib/envois'
 import { referenceCommande, texteDepuis, labelIle } from '@/lib/commandes'
@@ -73,10 +76,7 @@ export default function AAcheter({ lignes, brouillons, onPreparer, onRecharger, 
 
   if (lignes.length === 0) {
     return (
-      <div className="vide">
-        <div className="vide-emoji">🛍️</div>
-        Rien à acheter pour le moment. Les commandes confirmées apparaîtront ici.
-      </div>
+      <EtatVide icone={ShoppingBag} texte="Rien à acheter pour le moment. Les commandes confirmées apparaîtront ici." />
     )
   }
 
@@ -85,7 +85,7 @@ export default function AAcheter({ lignes, brouillons, onPreparer, onRecharger, 
       <style href="a-acheter" precedence="default">{css}</style>
 
       {groupes.length === 0 && (
-        <div className="vide"><div className="vide-emoji">🛍️</div>Rien à acheter pour le moment.</div>
+        <EtatVide icone={ShoppingBag} texte="Rien à acheter pour le moment." />
       )}
 
       {groupes.map((g) => {
@@ -99,7 +99,7 @@ export default function AAcheter({ lignes, brouillons, onPreparer, onRecharger, 
                 <b>{g.nom}</b>
                 <span>× {g.total} pièce{g.total > 1 ? 's' : ''} · {nbCommandes} commande{nbCommandes > 1 ? 's' : ''}</span>
                 {g.prix_achat != null && <span>Prix d&apos;achat habituel : {formatKMF(g.prix_achat)} KMF</span>}
-                {g.relancee && <span className="badge badge-or aa-badge">🔔 Relancé par les Comores</span>}
+                {g.relancee && <span className="badge badge-or aa-badge"><Icone icone={Bell} taille={16} /> Relancé par les Comores</span>}
               </div>
               <label className="aa-tout">
                 <input type="checkbox" checked={toutCoche} onChange={() => basculerGroupe(g)} />
@@ -117,7 +117,7 @@ export default function AAcheter({ lignes, brouillons, onPreparer, onRecharger, 
                       <b>{referenceCommande(l.commande_numero)} · {l.quantite} pce{l.quantite > 1 ? 's' : ''}</b>
                       {(l.taille || l.couleur) && <span>{[l.taille, l.couleur].filter(Boolean).join(' · ')}</span>}
                       <span>{labelIle(l.ile)} · confirmée {texteDepuis(l.confirmee_le)}</span>
-                      {l.relance_le && l.relance_note && <span className="aa-note">🔔 {l.relance_note}</span>}
+                      {l.relance_le && l.relance_note && <span className="aa-note"><Icone icone={Bell} taille={16} /> {l.relance_note}</span>}
                     </span>
                   </label>
 
@@ -180,32 +180,32 @@ export default function AAcheter({ lignes, brouillons, onPreparer, onRecharger, 
 
 const css = `
   .aa-groupe { padding: 14px; }
-  .aa-relance { border: 2px solid ${C.gold}; }
+  .aa-relance { border: 2px solid ${C.ink}; }
   .aa-tete { display: flex; align-items: flex-start; gap: 12px; }
   .aa-thumb {
-    width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+    width: 52px; height: 52px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .aa-titre { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
   .aa-titre b { font-size: 15px; }
-  .aa-titre span { font-size: 12.5px; color: ${C.inkSoft}; }
-  .aa-titre .aa-badge { align-self: flex-start; color: ${C.goldDeep}; }
-  .aa-tout { display: flex; align-items: center; gap: 6px; min-height: 44px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .aa-titre span { font-size: 13px; color: ${C.inkSoft}; }
+  .aa-titre .aa-badge { align-self: flex-start; color: ${C.ink}; }
+  .aa-tout { display: flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .aa-tout input, .aa-case input { width: 22px; height: 22px; accent-color: ${C.ink}; flex-shrink: 0; }
 
   .aa-lignes { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .aa-ligne { background: ${C.sand}; border-radius: 12px; padding: 4px 12px 8px; }
-  .aa-ligne-indispo { padding: 10px 12px; font-size: 13.5px; }
+  .aa-ligne-indispo { padding: 10px 12px; font-size: 14px; }
   .aa-case { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; padding: 8px 0; cursor: pointer; }
   .aa-detail { display: flex; flex-direction: column; gap: 2px; }
   .aa-detail b { font-size: 14px; }
-  .aa-detail span { font-size: 12.5px; color: ${C.inkSoft}; }
-  .aa-note { color: ${C.goldDeep}; font-weight: 600; }
-  .aa-aide { font-size: 12.5px; color: ${C.inkSoft}; margin: -6px 0 10px; }
+  .aa-detail span { font-size: 13px; color: ${C.inkSoft}; }
+  .aa-note { color: ${C.ink}; font-weight: 600; }
+  .aa-aide { font-size: 13px; color: ${C.inkSoft}; margin: -6px 0 10px; }
 
   .aa-lien {
     background: none; border: none; cursor: pointer; font-family: inherit; min-height: 44px;
-    padding: 0 2px; font-size: 13px; font-weight: 700; color: ${C.clay}; text-decoration: underline;
+    padding: 0 2px; font-size: 14px; font-weight: 700; color: ${C.clay}; text-decoration: underline;
   }
   .aa-indispo { display: flex; flex-direction: column; gap: 8px; padding-top: 6px; }
   .aa-boutons { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -213,11 +213,10 @@ const css = `
   .aa-barre {
     position: sticky; bottom: 12px; z-index: 20; margin-top: 14px;
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    background: ${C.inkDeep}; color: #fff; border-radius: 14px; padding: 12px 14px;
-    box-shadow: 0 8px 24px rgba(20,58,75,0.3);
+    background: ${C.inkDeep}; color: #fff; border-radius: 12px; padding: 12px 14px;
   }
   .aa-barre-nb { font-size: 14px; font-weight: 800; flex: 1 1 100%; }
   .aa-select { flex: 1; min-width: 160px; height: 46px; }
-  .aa-barre .btn-primary { background: ${C.gold}; color: ${C.inkDeep}; }
-  .aa-barre .btn-primary:hover { background: ${C.goldDeep}; }
+  .aa-barre .btn-primary { background: ${C.white}; color: ${C.inkDeep}; }
+  .aa-barre .btn-primary:hover { background: ${C.sand}; }
 `

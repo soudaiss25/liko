@@ -20,7 +20,11 @@ import CadreEspace from '@/components/espace/CadreEspace'
 import CarteEnvoi from '@/components/espace/CarteEnvoi'
 import DetailEnvoi from '@/components/espace/DetailEnvoi'
 import AAcheter from '@/components/espace/AAcheter'
+import { ClipboardList, Truck, Package, TriangleAlert, ArrowLeft, Plus, Minus, X } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 import {
   PAYS_ENVOI, TRANSPORTEURS_SUGGERES, referenceEnvoi, totalPieces,
   messageErreur, erreurNecessiteRechargement, formatDateCourte,
@@ -124,7 +128,7 @@ function EspaceEtranger() {
           <p className="page-sub">Prépare tes colis et suis leur arrivée aux Comores</p>
         </div>
         <button onClick={() => { setMessage(null); setVue({ type: 'edition', envoi: null, ajouts: [] }) }} className="btn-primary">
-          + Nouvel envoi
+          <Icone icone={Plus} taille={18} /> Nouvel envoi
         </button>
       </div>
 
@@ -132,7 +136,7 @@ function EspaceEtranger() {
 
       <style href="onglets-etranger" precedence="default">{`
         .segment { overflow-x: auto; }
-        .et-alerte { font-size: 13px; font-weight: 700; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5; border-radius: 10px; padding: 9px 12px; margin: 0 0 6px; }
+        .et-alerte { font-size: 14px; font-weight: 700; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5; border-radius: 8px; padding: 9px 12px; margin: 0 0 6px; }
       `}</style>
       <div className="segment" role="group" aria-label="Filtrer les envois">
         {[
@@ -149,7 +153,7 @@ function EspaceEtranger() {
       </div>
 
       {chargement ? (
-        <div className="state">Chargement…</div>
+        <div className="state"><ChargementListe nb={3} hauteur={96} /></div>
       ) : onglet === 'acheter' ? (
         <AAcheter
           lignes={lignesAchat}
@@ -159,18 +163,18 @@ function EspaceEtranger() {
           onMessage={setMessage}
         />
       ) : liste.length === 0 ? (
-        <div className="vide">
-          <div className="vide-emoji">{onglet === 'brouillon' ? '📝' : onglet === 'en_route' ? '🚚' : '📦'}</div>
-          {onglet === 'brouillon' && 'Aucun brouillon. Clique sur « + Nouvel envoi » pour préparer un colis.'}
-          {onglet === 'en_route' && 'Aucun envoi en route pour le moment.'}
-          {onglet === 'recus' && 'Aucun envoi réceptionné pour le moment.'}
-        </div>
+        <EtatVide
+          icone={onglet === 'brouillon' ? ClipboardList : onglet === 'en_route' ? Truck : Package}
+          texte={onglet === 'brouillon' ? 'Aucun brouillon. Clique sur « Nouvel envoi » pour préparer un colis.'
+            : onglet === 'en_route' ? 'Aucun envoi en route pour le moment.'
+            : 'Aucun envoi réceptionné pour le moment.'}
+        />
       ) : (
         liste.map((e) => (
           <div key={e.id}>
             {(e.alertes || []).length > 0 && (
               <p className="et-alerte">
-                ⚠️ {e.alertes.length} alerte{e.alertes.length > 1 ? 's' : ''} sur {referenceEnvoi(e)} : ouvre-le pour la lire.
+                <Icone icone={TriangleAlert} taille={18} /> {e.alertes.length} alerte{e.alertes.length > 1 ? 's' : ''} sur {referenceEnvoi(e)} : ouvre-le pour la lire.
               </p>
             )}
             <CarteEnvoi
@@ -413,7 +417,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
     <section aria-labelledby="titre-editeur">
       <style href="editeur-envoi" precedence="default">{css}</style>
 
-      <button onClick={retour} className="btn-secondary ed-retour">← Retour</button>
+      <button onClick={retour} className="btn-secondary ed-retour"><Icone icone={ArrowLeft} taille={18} /> Retour</button>
 
       <div className="page-head">
         <div>
@@ -426,7 +430,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
 
       {alertes.length > 0 && (
         <div className="ed-alertes" role="alert">
-          <b>⚠️ À lire</b>
+          <b><Icone icone={TriangleAlert} taille={18} /> À lire</b>
           <ul>
             {alertes.map((a, i) => (
               <li key={i}>{a.date && <small>{formatDateCourte(a.date)} · </small>}{a.message}</li>
@@ -500,7 +504,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
 
         <button onClick={() => setAjoutHorsCommandeOuvert(!ajoutHorsCommandeOuvert)} aria-expanded={ajoutHorsCommandeOuvert}
           className="btn-secondary ed-replier">
-          {ajoutHorsCommandeOuvert ? '− ' : '+ '}Ajouter un produit hors commande (pour le stock)
+          <Icone icone={ajoutHorsCommandeOuvert ? Minus : Plus} taille={18} /> Ajouter un produit hors commande (pour le stock)
         </button>
 
         {ajoutHorsCommandeOuvert && (
@@ -508,7 +512,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
           <input
             type="search"
             className="input"
-            placeholder="🔍 Chercher un produit du catalogue…"
+            placeholder="Chercher un produit du catalogue"
             aria-label="Chercher un produit à ajouter"
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
@@ -615,7 +619,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
       {/* ── Actions ── */}
       <div className="ed-actions">
         <button onClick={marquerParti} disabled={occupe} className="btn-primary btn-large">
-          {occupe ? 'Patiente…' : '🚚 Enregistrer et marquer comme parti'}
+          {occupe ? 'Patiente…' : <><Icone icone={Truck} taille={18} /> Enregistrer et marquer comme parti</>}
         </button>
         <button onClick={enregistrerBrouillon} disabled={occupe} className="btn-secondary btn-large">
           Enregistrer le brouillon
@@ -633,15 +637,15 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
 /* ─────────── CSS de l'éditeur (préfixe ed-) ─────────── */
 const css = `
   .ed-retour { margin-bottom: 14px; }
-  .ed-aide { font-size: 12.5px; color: ${C.inkSoft}; margin: -6px 0 12px; }
-  .ed-info { font-size: 12.5px; color: ${C.goldDeep}; margin: 8px 2px 0; font-weight: 600; }
-  .ed-vide { font-size: 13.5px; color: ${C.inkSoft}; text-align: center; padding: 18px 0 6px; margin: 0; }
+  .ed-aide { font-size: 13px; color: ${C.inkSoft}; margin: -6px 0 12px; }
+  .ed-info { font-size: 13px; color: ${C.ink}; margin: 8px 2px 0; font-weight: 600; }
+  .ed-vide { font-size: 14px; color: ${C.inkSoft}; text-align: center; padding: 18px 0 6px; margin: 0; }
 
   /* Recherche */
   .ed-recherche { position: relative; margin-bottom: 14px; }
   .ed-resultats {
     list-style: none; margin: 6px 0 0; padding: 4px; background: #fff;
-    border: 1px solid ${C.line}; border-radius: 12px; box-shadow: 0 8px 24px rgba(20,58,75,0.12);
+    border: 1px solid ${C.line}; border-radius: 12px;
   }
   .ed-resultat {
     display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px;
@@ -650,7 +654,7 @@ const css = `
   }
   .ed-resultat:hover { background: ${C.sand}; }
   .ed-resultat-nom { flex: 1; font-size: 14px; font-weight: 600; }
-  .ed-resultat-nom small { color: ${C.goldDeep}; font-weight: 600; }
+  .ed-resultat-nom small { color: ${C.ink}; font-weight: 600; }
   .ed-plus { font-size: 20px; font-weight: 700; color: ${C.ink}; }
 
   .ed-thumb {
@@ -663,25 +667,25 @@ const css = `
   .ed-ligne { background: ${C.sand}; border-radius: 12px; padding: 10px 12px; }
   .ed-ligne-haut { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .ed-ligne-nom { flex: 1; font-size: 14px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .ed-pour { font-size: 12px; font-weight: 700; color: ${C.goldDeep}; }
+  .ed-pour { font-size: 13px; font-weight: 700; color: ${C.ink}; }
   .ed-qte-fixe { margin: 0; min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
   .ed-qte-fixe b { font-size: 17px; }
-  .ed-qte-fixe small { font-size: 11px; color: ${C.inkSoft}; }
+  .ed-qte-fixe small { font-size: 13px; color: ${C.inkSoft}; }
   .ed-replier { width: 100%; margin-bottom: 12px; white-space: normal; text-align: left; justify-content: flex-start; }
   .ed-alertes {
-    background: #FBF0EE; border: 1.5px solid ${C.clay}; border-radius: 14px; padding: 14px;
+    background: #FBF0EE; border: 1.5px solid ${C.clay}; border-radius: 12px; padding: 14px;
     margin-bottom: 12px; color: ${C.inkDeep}; font-size: 14px;
   }
   .ed-alertes b { color: ${C.clay}; }
   .ed-alertes ul { margin: 8px 0 12px; padding-left: 18px; line-height: 1.5; }
   .ed-retirer {
-    width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
-    background: #fff; color: ${C.clay}; font-size: 13px; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 8px; border: none; cursor: pointer;
+    background: #fff; color: ${C.clay}; font-size: 14px; flex-shrink: 0;
   }
   .ed-ligne-champs { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: end; }
-  .ed-mini-label { display: block; font-size: 11.5px; font-weight: 700; color: ${C.inkSoft}; margin-bottom: 5px; }
+  .ed-mini-label { display: block; font-size: 13px; font-weight: 700; color: ${C.inkSoft}; margin-bottom: 5px; }
 
-  .ed-qte { display: flex; align-items: center; background: #fff; border: 1.5px solid ${C.line}; border-radius: 10px; overflow: hidden; }
+  .ed-qte { display: flex; align-items: center; background: #fff; border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden; }
   .ed-qte button {
     width: 44px; height: 44px; border: none; background: none; cursor: pointer;
     font-size: 20px; font-weight: 700; color: ${C.inkDeep};
@@ -695,7 +699,7 @@ const css = `
   .ed-total {
     display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
     border-top: 1px solid ${C.line}; margin-top: 14px; padding-top: 12px;
-    font-size: 13.5px; color: ${C.inkSoft};
+    font-size: 14px; color: ${C.inkSoft};
   }
   .ed-total b { color: ${C.inkDeep}; }
 

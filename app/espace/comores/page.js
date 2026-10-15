@@ -19,12 +19,16 @@ import CadreEspace from '@/components/espace/CadreEspace'
 import CarteEnvoi from '@/components/espace/CarteEnvoi'
 import DetailEnvoi from '@/components/espace/DetailEnvoi'
 import { CommandesListe, DetailCommande } from '@/components/espace/CommandesComores'
+import { Truck, Package, Warehouse, TriangleAlert, StickyNote, RefreshCw, ArrowLeft, Search } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 import {
   MOTIFS_ECART, referenceEnvoi, formatDateCourte, estEnRetard, totalPieces,
   dateLocale, messageErreur, erreurNecessiteRechargement,
 } from '@/lib/envois'
-import { flagPour, normaliserTexte } from '@/lib/produit'
+import { normaliserTexte } from '@/lib/produit'
 import { referenceCommande, messageErreurCommande } from '@/lib/commandes'
 
 import { C } from '@/lib/theme'
@@ -82,7 +86,7 @@ function EspaceComores() {
       return (
         <section>
           <p role="alert" className="err">Cette commande n&apos;est plus dans la liste. Actualise la page.</p>
-          <button onClick={() => fermer()} className="btn-primary">← Retour aux commandes</button>
+          <button onClick={() => fermer()} className="btn-primary"><Icone icone={ArrowLeft} taille={18} /> Retour aux commandes</button>
         </section>
       )
     }
@@ -124,7 +128,7 @@ function EspaceComores() {
           <h1 className="page-title">Commandes & stock</h1>
           <p className="page-sub">Suis les commandes, réceptionne les colis, garde le stock à jour</p>
         </div>
-        <button onClick={() => { setMessage(null); charger() }} className="btn-secondary">↻ Actualiser</button>
+        <button onClick={() => { setMessage(null); charger() }} className="btn-secondary"><Icone icone={RefreshCw} taille={18} /> Actualiser</button>
       </div>
 
       {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={message.type}>{message.texte}</p>}
@@ -145,12 +149,12 @@ function EspaceComores() {
       </div>
 
       {chargement ? (
-        <div className="state">Chargement…</div>
+        <div className="state"><ChargementListe nb={3} hauteur={96} /></div>
       ) : onglet === 'commandes' ? (
         <CommandesListe commandes={commandes} onOuvrir={(id) => { setMessage(null); setVue({ type: 'commande', id }) }} />
       ) : onglet === 'arrivages' ? (
         arrivages.length === 0 ? (
-          <div className="vide"><div className="vide-emoji">🚚</div>Aucun colis en route pour le moment.</div>
+          <EtatVide icone={Truck} texte="Aucun colis en route pour le moment." />
         ) : (
           arrivages.map((e) => (
             <CarteEnvoi
@@ -165,7 +169,7 @@ function EspaceComores() {
         )
       ) : onglet === 'recus' ? (
         recus.length === 0 ? (
-          <div className="vide"><div className="vide-emoji">📦</div>Aucun envoi réceptionné pour le moment.</div>
+          <EtatVide icone={Package} texte="Aucun envoi réceptionné pour le moment." />
         ) : (
           recus.map((e) => (
             <CarteEnvoi
@@ -183,7 +187,7 @@ function EspaceComores() {
         <>
           <style href="stock-comores" precedence="default">{cssStock}</style>
           {stock.length === 0 ? (
-            <div className="vide"><div className="vide-emoji">🏬</div>Le stock est vide. Il se remplit à chaque réception.</div>
+            <EtatVide icone={Warehouse} texte="Le stock est vide. Il se remplit à chaque réception." />
           ) : (
             <>
               <p className="st-resume">
@@ -191,14 +195,14 @@ function EspaceComores() {
               </p>
               {horsLigne > 0 && (
                 <p className="st-alerte">
-                  ⚠️ {horsLigne} produit{horsLigne > 1 ? 's sont' : ' est'} en stock mais pas en ligne sur le site.
+                  <Icone icone={TriangleAlert} taille={18} /> {horsLigne} produit{horsLigne > 1 ? 's sont' : ' est'} en stock mais pas en ligne sur le site.
                   Préviens l'admin : ce stock ne peut pas se vendre.
                 </p>
               )}
               <input
                 type="search"
                 className="input st-recherche"
-                placeholder="🔍 Chercher dans le stock…"
+                placeholder="Chercher dans le stock"
                 aria-label="Chercher dans le stock"
                 value={rechercheStock}
                 onChange={(e) => setRechercheStock(e.target.value)}
@@ -218,7 +222,7 @@ function EspaceComores() {
                   </li>
                 ))}
               </ul>
-              {stockFiltre.length === 0 && <p className="vide">Aucun produit ne correspond.</p>}
+              {stockFiltre.length === 0 && <EtatVide icone={Search} texte="Aucun produit ne correspond." />}
             </>
           )}
         </>
@@ -328,13 +332,13 @@ function Reception({ envoi, onFermer }) {
     <section aria-labelledby="titre-reception">
       <style href="reception" precedence="default">{cssReception}</style>
 
-      <button onClick={retour} className="btn-secondary rc-retour">← Retour</button>
+      <button onClick={retour} className="btn-secondary rc-retour"><Icone icone={ArrowLeft} taille={18} /> Retour</button>
 
       <div className="page-head">
         <div>
           <h1 id="titre-reception" className="page-title">Réceptionner {referenceEnvoi(envoi)}</h1>
           <p className="page-sub">
-            {flagPour(envoi.pays_origine)}
+            Origine : {envoi.pays_origine}
             {envoi.transporteur && ` · ${envoi.transporteur}`}
             {envoi.numero_suivi && ` · n° ${envoi.numero_suivi}`}
             {` · parti le ${formatDateCourte(envoi.date_depart)}`}
@@ -342,7 +346,7 @@ function Reception({ envoi, onFermer }) {
         </div>
       </div>
 
-      {envoi.note && <p className="rc-note">📝 Note de l'expéditeur : {envoi.note}</p>}
+      {envoi.note && <p className="rc-note"><Icone icone={StickyNote} taille={18} /> Note de l'expéditeur : {envoi.note}</p>}
 
       <p className="rc-consigne">
         Compte chaque produit. Les quantités sont pré-remplies avec ce qui a été envoyé :
@@ -370,7 +374,7 @@ function Reception({ envoi, onFermer }) {
             </div>
 
             {ligne.commande_numero && (
-              <p className="rc-pour">📦 Pour {referenceCommande(ligne.commande_numero)} : à mettre de côté pour ce client</p>
+              <p className="rc-pour"><Icone icone={Package} taille={18} /> Pour {referenceCommande(ligne.commande_numero)} : à mettre de côté pour ce client</p>
             )}
 
             {/* La raison n'apparaît que s'il y a un écart */}
@@ -424,43 +428,43 @@ function Reception({ envoi, onFermer }) {
 /* ─────────── CSS ─────────── */
 const cssReception = `
   .rc-retour { margin-bottom: 14px; }
-  .rc-note { font-size: 13px; background: #FFF6E4; border: 1px solid #F1DDAE; color: #7A5C1E; border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; }
-  .rc-consigne { font-size: 13.5px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 14px; }
+  .rc-note { font-size: 14px; background: ${C.bgGrey}; border: 1px solid ${C.line}; color: #7A5C1E; border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+  .rc-consigne { font-size: 14px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 14px; }
   .rc-consigne b { color: ${C.inkDeep}; }
 
   .rc-lignes { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .rc-ligne { background: #fff; border: 1.5px solid ${C.line}; border-radius: 14px; padding: 12px; }
-  .rc-ecart { border-color: ${C.gold}; background: #FFFBF2; }
+  .rc-ligne { background: #fff; border: 1.5px solid ${C.line}; border-radius: 12px; padding: 12px; }
+  .rc-ecart { border-color: ${C.ink}; }
   .rc-probleme { border-color: ${C.clay}; background: #FBF0EE; }
 
   .rc-haut { display: flex; align-items: center; gap: 12px; }
   .rc-thumb {
-    width: 48px; height: 48px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+    width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .rc-nom { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .rc-nom b { font-size: 14px; }
-  .rc-nom span { font-size: 12.5px; color: ${C.inkSoft}; }
+  .rc-nom span { font-size: 13px; color: ${C.inkSoft}; }
 
   .rc-recu { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
-  .rc-recu span { font-size: 11px; font-weight: 700; color: ${C.inkSoft}; }
+  .rc-recu span { font-size: 13px; font-weight: 700; color: ${C.inkSoft}; }
   .rc-recu input {
-    width: 72px; height: 48px; text-align: center; border-radius: 10px;
+    width: 72px; height: 48px; text-align: center; border-radius: 8px;
     border: 1.5px solid ${C.line}; background: ${C.sand}; outline: none;
     font-size: 18px; font-weight: 800; font-family: inherit; color: ${C.inkDeep};
   }
   .rc-recu input:focus { border-color: ${C.ink}; background: #fff; }
 
-  .rc-pour { font-size: 12.5px; font-weight: 700; color: ${C.goldDeep}; background: #FFF6E4; border-radius: 8px; padding: 8px 10px; margin: 10px 0 0; }
+  .rc-pour { font-size: 13px; font-weight: 700; color: ${C.ink}; background: ${C.bgGrey}; border-radius: 8px; padding: 8px 10px; margin: 10px 0 0; }
   .rc-motif { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
-  .rc-erreur-ligne { font-size: 12.5px; color: ${C.clay}; font-weight: 700; margin: 8px 0 0; }
+  .rc-erreur-ligne { font-size: 13px; color: ${C.clay}; font-weight: 700; margin: 8px 0 0; }
 
   .rc-resume {
     display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
     background: #E8F5EE; color: ${C.leaf}; border-radius: 12px; padding: 12px 14px;
     font-size: 14px; font-weight: 700; margin-bottom: 14px;
   }
-  .rc-resume-ecart { background: #FFF1D6; color: ${C.goldDeep}; }
+  .rc-resume-ecart { background: #fbf0d9; color: #8a5a0b; }
   .rc-resume b { font-size: 16px; }
 
   .rc-actions { display: flex; flex-direction: column; gap: 10px; }
@@ -474,8 +478,8 @@ const cssStock = `
   .st-resume { font-size: 14px; color: ${C.inkSoft}; margin: 0 0 10px; }
   .st-resume b { color: ${C.inkDeep}; font-size: 16px; }
   .st-alerte {
-    font-size: 13px; color: #7A5C1E; background: #FFF6E4; border: 1px solid #F1DDAE;
-    border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; line-height: 1.45;
+    font-size: 14px; color: #7A5C1E; background: ${C.bgGrey}; border: 1px solid ${C.line};
+    border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; line-height: 1.45;
   }
   .st-recherche { margin-bottom: 12px; }
   .st-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -484,14 +488,14 @@ const cssStock = `
     background: #fff; border: 1px solid ${C.line}; border-radius: 12px; padding: 10px 12px;
   }
   .st-thumb {
-    width: 44px; height: 44px; border-radius: 9px; overflow: hidden; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .st-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .st-info b { font-size: 14px; }
-  .st-info span { font-size: 12px; color: ${C.inkSoft}; }
+  .st-info span { font-size: 13px; color: ${C.inkSoft}; }
   .st-info em { color: ${C.clay}; font-style: normal; font-weight: 700; }
   .st-qte { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
   .st-qte b { font-size: 20px; font-weight: 800; color: ${C.leaf}; }
-  .st-qte span { font-size: 11px; color: ${C.inkSoft}; }
+  .st-qte span { font-size: 13px; color: ${C.inkSoft}; }
 `
