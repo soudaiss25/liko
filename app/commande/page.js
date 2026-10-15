@@ -23,13 +23,7 @@ import {
 } from '@/lib/commandes'
 import { DELAI_LIVRAISON } from '@/lib/config'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A', bgGrey: '#F2F3F5',
-}
-
+import { C } from '@/lib/theme'
 /* "+269 333 44 55" → { indicatif: '+269', numero: '333 44 55' } */
 function decouperTelephone(tel) {
   if (!tel) return { indicatif: '+269', numero: '' }

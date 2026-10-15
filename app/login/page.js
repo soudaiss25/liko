@@ -3,19 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 
+import { C } from '@/lib/theme'
 /* ─────────── Tokens (alignés sur le logo) ─────────── */
-const C = {
-  ink: '#1D4E63',
-  inkDeep: '#143A4B',
-  inkSoft: '#6E8A97',
-  sand: '#FAF8F3',
-  line: '#E9E4DA',
-  gold: '#D99A2B',
-  leaf: '#4E8A6B',
-  clay: '#C2574A',
-  white: '#FFFFFF',
-}
-
 const s = {
   page: {
     minHeight: '100vh',

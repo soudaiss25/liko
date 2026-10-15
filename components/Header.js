@@ -18,12 +18,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { getPanierCount } from '@/lib/cart'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-}
-
+import { C } from '@/lib/theme'
 export default function Header({ search, onSearchChange }) {
   const supabase = createClient()
   const router = useRouter()

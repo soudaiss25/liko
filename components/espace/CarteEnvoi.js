@@ -9,11 +9,7 @@
 import { STATUTS_ENVOI, referenceEnvoi, formatDateCourte, estEnRetard } from '@/lib/envois'
 import { flagPour } from '@/lib/produit'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  line: '#E4DED2', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 export default function CarteEnvoi({ envoi, nbProduits, nbPieces, onOuvrir, libelleAction = 'Voir' }) {
   const statut = STATUTS_ENVOI[envoi.statut] || STATUTS_ENVOI.brouillon
   const retard = estEnRetard(envoi)

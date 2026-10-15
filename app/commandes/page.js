@@ -20,12 +20,7 @@ import {
   STATUTS_COMMANDE, referenceCommande, formatDate, suivisMemorises, messageErreurCommande,
 } from '@/lib/commandes'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', leaf: '#3E9268', clay: '#C2574A', bgGrey: '#F2F3F5',
-}
-
+import { C } from '@/lib/theme'
 const EN_COURS = ['recue', 'confirmee', 'en_achat', 'expediee', 'arrivee', 'en_livraison', 'echec_livraison']
 
 export default function PageMesCommandes() {

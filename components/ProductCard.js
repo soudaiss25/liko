@@ -17,13 +17,7 @@ import ProduitImage from '@/components/ProduitImage'
 import { ajouterAuPanier } from '@/lib/cart'
 import { flagPour, formatKMF, prixPieceEnLot } from '@/lib/produit'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 export default function ProductCard({ produit: p, estFavori = false, onToggleFavori, titreFavori }) {
   const [ajoute, setAjoute] = useState(false)
   const pieceLot = prixPieceEnLot(p)

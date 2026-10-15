@@ -20,13 +20,7 @@
 import { createClient } from '@/lib/supabase-browser'
 import { useGardeAcces } from '@/lib/garde'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A', bgGrey: '#F2F3F5',
-}
-
+import { C } from '@/lib/theme'
 export default function CadreEspace({ rolesAutorises, titre, children }) {
   const { etat, profil } = useGardeAcces(rolesAutorises)
 

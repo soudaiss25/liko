@@ -17,13 +17,7 @@ import ProduitImage from '@/components/ProduitImage'
 import { calculerVentes, STATUT_A_TRAITER } from '@/lib/ventes'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 const UN_JOUR = 24 * 60 * 60 * 1000
 
 const PERIODES = [

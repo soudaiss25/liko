@@ -9,11 +9,7 @@
 
 import { ETAPES, indexEtape, formatDate } from '@/lib/commandes'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  line: '#E4DED2', leaf: '#3E9268', clay: '#C2574A', gold: '#E8A020',
-}
-
+import { C } from '@/lib/theme'
 export default function FriseCommande({ statut, etapesDatees = {} }) {
   const actuelle = indexEtape(statut, etapesDatees)
   const interrompue = statut === 'annulee' || statut === 'echec_livraison'

@@ -44,7 +44,10 @@ for (const dossier of DOSSIERS) {
   try { liste = fichiersJS(dossier) } catch { continue }
 
   for (const fichier of liste) {
-    const texte = readFileSync(fichier, 'utf8')
+    // Les fichiers peuvent être en fins de ligne Windows (CRLF) : on travaille en LF, puis on remet l'original
+    const brut = readFileSync(fichier, 'utf8')
+    const crlf = brut.includes('\r\n')
+    const texte = brut.replace(/\r\n/g, '\n')
     const bloc = texte.match(BLOC)
     if (!bloc) continue
     if (texte.includes("from '@/lib/theme'")) continue
@@ -69,7 +72,7 @@ for (const dossier of DOSSIERS) {
     const fin = imports.at(-1).index + imports.at(-1)[0].length
     nouveau = nouveau.slice(0, fin) + "import { C } from '@/lib/theme'\n" + nouveau.slice(fin)
 
-    if (APPLIQUER) writeFileSync(fichier, nouveau)
+    if (APPLIQUER) writeFileSync(fichier, crlf ? nouveau.replace(/\n/g, '\r\n') : nouveau)
     console.log(`${APPLIQUER ? '✅ modifié ' : '•  à modifier'}  ${relative('.', fichier)}`)
     modifies++
   }

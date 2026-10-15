@@ -21,13 +21,7 @@ import {
 } from '@/lib/commandes'
 import { WHATSAPP_SERVICE } from '@/lib/config'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A', bgGrey: '#F2F3F5',
-}
-
+import { C } from '@/lib/theme'
 export default function PageSuivi() {
   const { code } = useParams()
   const supabase = createClient()

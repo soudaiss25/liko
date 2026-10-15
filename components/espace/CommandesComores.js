@@ -21,13 +21,7 @@ import {
   messageErreurCommande, texteDepuis,
 } from '@/lib/commandes'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 const FILTRES = [
   { id: 'a_livrer', label: 'À livrer', statuts: ['arrivee', 'echec_livraison', 'en_livraison'] },
   { id: 'en_cours', label: 'En cours', statuts: ['recue', 'confirmee', 'en_achat', 'expediee'] },
