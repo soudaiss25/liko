@@ -11,12 +11,17 @@
 */
 
 import { useState, useEffect } from 'react'
+import { Globe, MapPin, Plus, Copy, Check, ArrowLeftRight, KeyRound, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
+import Icone from '@/components/ui/Icone'
+import Badge from '@/components/ui/Badge'
+import EtatVide from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 
 import { C } from '@/lib/theme'
 const ROLES = {
-  collab_etranger: { icone: '🌍', label: 'À l\u2019étranger', detail: 'Prépare et expédie les envois' },
-  collab_comores: { icone: '🇰🇲', label: 'Aux Comores', detail: 'Réceptionne les colis, gère le stock' },
+  collab_etranger: { icone: Globe, label: 'À l\u2019étranger', detail: 'Prépare et expédie les envois' },
+  collab_comores: { icone: MapPin, label: 'Aux Comores', detail: 'Réceptionne les colis, gère le stock' },
 }
 
 const MDP_MIN = 8
@@ -201,7 +206,7 @@ export default function Collaborateurs() {
           <p className="page-sub">Les personnes qui achètent à l'étranger et réceptionnent aux Comores</p>
         </div>
         {!formOuvert && (
-          <button onClick={ouvrirForm} className="btn-primary">+ Ajouter un collaborateur</button>
+          <button onClick={ouvrirForm} className="btn-primary"><Icone icone={Plus} taille={18} /> Ajouter un collaborateur</button>
         )}
       </div>
 
@@ -213,7 +218,7 @@ export default function Collaborateurs() {
           {identifiantsCrees ? (
             /* ── Écran de fin : identifiants à transmettre ── */
             <div>
-              <h2 className="co-panel-titre">✓ Compte créé</h2>
+              <h2 className="co-panel-titre">Compte créé</h2>
               <p className="co-texte">
                 Transmets ces identifiants à {identifiantsCrees.prenom} (par WhatsApp par exemple).
                 <b> Le mot de passe ne sera plus affiché ensuite.</b>
@@ -224,7 +229,7 @@ export default function Collaborateurs() {
                 <div><dt>Son espace</dt><dd>{identifiantsCrees.espace}</dd></div>
               </dl>
               <div className="co-actions">
-                <button onClick={copierIdentifiants} className="btn-primary">{copie ? '✓ Copié' : '📋 Copier le message'}</button>
+                <button onClick={copierIdentifiants} className="btn-primary">{copie ? <><Icone icone={Check} taille={18} /> Copié</> : <><Icone icone={Copy} taille={18} /> Copier le message</>}</button>
                 <button onClick={() => setFormOuvert(false)} className="btn-secondary">Terminé</button>
               </div>
             </div>
@@ -238,7 +243,7 @@ export default function Collaborateurs() {
                 {Object.entries(ROLES).map(([id, r]) => (
                   <button key={id} onClick={() => changer('role', id)} aria-pressed={form.role === id}
                     className={`co-role ${form.role === id ? 'co-role-on' : ''}`}>
-                    <span className="co-role-icone" aria-hidden="true">{r.icone}</span>
+                    <span className="co-role-icone"><Icone icone={r.icone} taille={24} /></span>
                     <b>{r.label}</b>
                     <span>{r.detail}</span>
                   </button>
@@ -316,12 +321,9 @@ export default function Collaborateurs() {
 
       {/* ════════ LISTE ════════ */}
       {chargement ? (
-        <div className="state">Chargement…</div>
+        <ChargementListe nb={3} hauteur={88} />
       ) : collabs.length === 0 ? (
-        <div className="co-vide">
-          <div className="co-vide-emoji">🤝</div>
-          Aucun collaborateur pour l'instant.
-        </div>
+        <EtatVide icone={Users} texte="Aucun collaborateur pour l'instant." action={{ label: 'Ajouter un collaborateur', onClick: ouvrirForm }} />
       ) : (
         <ul className="co-liste">
           {collabs.map((c) => {
@@ -334,9 +336,7 @@ export default function Collaborateurs() {
                     <b>{c.prenom} {c.nom || ''}</b>
                     <span>@{c.username} · {c.telephone}</span>
                   </div>
-                  <span className={`co-badge ${c.role === 'collab_comores' ? 'co-badge-vert' : 'co-badge-bleu'}`}>
-                    {r?.icone} {r?.label}
-                  </span>
+                  <Badge ton={c.role === 'collab_comores' ? 'vert' : 'bleu'}>{r?.label}</Badge>
                 </div>
 
                 {mdpPour === c.id ? (
@@ -349,8 +349,8 @@ export default function Collaborateurs() {
                   </div>
                 ) : (
                   <div className="co-ligne-actions">
-                    <button onClick={() => changerEspace(c)} disabled={occupe} className="co-btn">⇄ Changer d'espace</button>
-                    <button onClick={() => { setMdpPour(c.id); setNouveauMdp('') }} disabled={occupe} className="co-btn">🔑 Nouveau mot de passe</button>
+                    <button onClick={() => changerEspace(c)} disabled={occupe} className="co-btn"><Icone icone={ArrowLeftRight} taille={18} /> Changer d'espace</button>
+                    <button onClick={() => { setMdpPour(c.id); setNouveauMdp('') }} disabled={occupe} className="co-btn"><Icone icone={KeyRound} taille={18} /> Nouveau mot de passe</button>
                     <button onClick={() => retirerAcces(c)} disabled={occupe} className="co-btn co-btn-danger">Retirer l'accès</button>
                   </div>
                 )}
@@ -366,72 +366,68 @@ export default function Collaborateurs() {
 /* ─────────── CSS (préfixe co-) ─────────── */
 const css = `
   .co-ok {
-    font-size: 13.5px; color: ${C.leaf}; background: #E8F5EE; border: 1px solid #CDE8D8;
-    border-radius: 10px; padding: 11px 13px; margin: 0 0 14px; font-weight: 600;
+    font-size: 15px; color: #2c6e4d; background: #e6f3ec; border: 1px solid #cde5d8;
+    border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; font-weight: 600;
   }
 
-  .co-panel { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 20px; margin-bottom: 18px; }
-  .co-panel-titre { font-size: 17px; font-weight: 800; margin: 0 0 14px; }
-  .co-texte { font-size: 13.5px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 14px; }
+  .co-panel { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .co-panel-titre { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
+  .co-texte { font-size: 15px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 16px; }
   .co-texte b { color: ${C.inkDeep}; }
 
-  .co-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .co-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .co-role {
-    display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left;
-    background: #fff; border: 2px solid ${C.line}; border-radius: 12px; padding: 14px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left;
+    background: ${C.white}; border: 1.5px solid ${C.line}; border-radius: 8px; padding: 16px;
     cursor: pointer; font-family: inherit; color: ${C.inkDeep};
   }
-  .co-role b { font-size: 14px; }
-  .co-role span { font-size: 12px; color: ${C.inkSoft}; }
-  .co-role-icone { font-size: 22px !important; margin-bottom: 2px; }
-  .co-role-on { border-color: ${C.ink}; background: #E7EFF2; }
+  .co-role b { font-size: 15px; }
+  .co-role span { font-size: 14px; color: ${C.inkSoft}; }
+  .co-role .co-role-icone { margin-bottom: 4px; color: ${C.ink}; display: flex; }
+  .co-role-on { border-color: ${C.ink}; box-shadow: inset 0 0 0 1px ${C.ink}; }
 
-  .co-mode { display: flex; background: ${C.sand}; border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 16px; }
+  .co-mode { display: flex; background: ${C.sand}; border-radius: 8px; padding: 4px; gap: 4px; margin-bottom: 16px; }
   .co-mode-btn {
     flex: 1; border: none; background: none; cursor: pointer; font-family: inherit;
-    font-size: 13px; font-weight: 700; color: ${C.inkSoft}; padding: 9px; border-radius: 8px;
+    font-size: 15px; font-weight: 700; color: ${C.inkSoft}; min-height: 44px; padding: 0 8px; border-radius: 6px;
   }
-  .co-mode-on { background: #fff; color: ${C.inkDeep}; box-shadow: 0 1px 3px rgba(20,58,75,0.12); }
+  .co-mode-on { background: ${C.white}; color: ${C.inkDeep}; }
 
   .co-mdp { display: flex; gap: 8px; }
   .co-mdp .input { flex: 1; font-family: ui-monospace, monospace; }
   .co-mdp-ligne { flex-wrap: wrap; margin-top: 10px; }
   .co-mdp-ligne .input { min-width: 180px; }
 
-  .co-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+  .co-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
 
   .co-identifiants {
-    background: ${C.sand}; border-radius: 12px; padding: 14px; margin: 0 0 14px;
-    display: flex; flex-direction: column; gap: 10px;
+    background: ${C.sand}; border-radius: 8px; padding: 16px; margin: 0 0 16px;
+    display: flex; flex-direction: column; gap: 12px;
   }
-  .co-identifiants dt { font-size: 11.5px; color: ${C.inkSoft}; font-weight: 600; }
+  .co-identifiants dt { font-size: 14px; color: ${C.inkSoft}; font-weight: 600; }
   .co-identifiants dd { margin: 2px 0 0; font-size: 16px; font-weight: 800; font-family: ui-monospace, monospace; word-break: break-all; }
 
-  .co-vide { text-align: center; padding: 44px 16px; color: ${C.inkSoft}; font-size: 14px; }
-  .co-vide-emoji { font-size: 40px; margin-bottom: 8px; }
-
-  .co-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-  .co-ligne { background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px; }
+  .co-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .co-ligne { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; }
   .co-ligne-haut { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .co-avatar {
-    width: 42px; height: 42px; border-radius: 50%; background: ${C.ink}; color: #fff;
+    width: 44px; height: 44px; border-radius: 50%; background: ${C.ink}; color: ${C.white};
     display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0;
   }
   .co-infos { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 2px; }
-  .co-infos b { font-size: 14.5px; }
-  .co-infos span { font-size: 12.5px; color: ${C.inkSoft}; }
-  .co-badge { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 20px; white-space: nowrap; }
-  .co-badge-bleu { background: #E7EFF2; color: ${C.ink}; }
-  .co-badge-vert { background: #E8F5EE; color: ${C.leaf}; }
+  .co-infos b { font-size: 16px; }
+  .co-infos span { font-size: 14px; color: ${C.inkSoft}; }
 
   .co-ligne-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .co-btn {
-    background: ${C.sand}; border: none; cursor: pointer; font-family: inherit;
-    font-size: 12.5px; font-weight: 700; color: ${C.inkDeep}; padding: 9px 12px; border-radius: 8px;
+    background: ${C.white}; border: 1.5px solid ${C.line}; cursor: pointer; font-family: inherit;
+    font-size: 15px; font-weight: 700; color: ${C.inkDeep}; min-height: 44px; padding: 0 16px; border-radius: 8px;
+    display: inline-flex; align-items: center; gap: 8px;
   }
+  .co-btn:hover:not(:disabled) { border-color: ${C.inkSoft}; }
   .co-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .co-btn-danger { color: ${C.clay}; }
-  .co-btn-danger:hover { background: #FDECEB; }
+  .co-btn-danger:hover:not(:disabled) { background: #fbf0ee; border-color: #e9c9c4; }
 
   @media (max-width: 560px) {
     .co-roles { grid-template-columns: 1fr; }

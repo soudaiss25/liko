@@ -13,7 +13,9 @@
 */
 
 import { useState } from 'react'
+import { ClipboardList, Camera, Clock, EyeOff, Trash2, RefreshCw } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
 import { calculerVentes, STATUT_A_TRAITER } from '@/lib/ventes'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 
@@ -131,21 +133,21 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
 
   const taches = [
     aTraiter > 0 && {
-      icone: '🛎️', texte: `${aTraiter} commande${aTraiter > 1 ? 's' : ''} à confirmer`,
+      icone: ClipboardList, texte: `${aTraiter} commande${aTraiter > 1 ? 's' : ''} à confirmer`,
       detail: 'Statut « reçue », en attente de ton équipe',
     },
     sansPhoto > 0 && {
-      icone: '📷', texte: `${sansPhoto} produit${sansPhoto > 1 ? 's' : ''} en ligne sans photo`,
+      icone: Camera, texte: `${sansPhoto} produit${sansPhoto > 1 ? 's' : ''} en ligne sans photo`,
       detail: 'Un produit sans photo se vend beaucoup moins',
       action: () => onVoirProduits({ sansPhoto: true, statut: 'en_ligne' }),
     },
     jamaisVendus > 0 && {
-      icone: '💤', texte: `${jamaisVendus} produit${jamaisVendus > 1 ? 's' : ''} jamais vendu${jamaisVendus > 1 ? 's' : ''}`,
+      icone: Clock, texte: `${jamaisVendus} produit${jamaisVendus > 1 ? 's' : ''} jamais vendu${jamaisVendus > 1 ? 's' : ''}`,
       detail: 'Photo, prix ou description à revoir ?',
       action: () => onVoirProduits({ jamaisVendu: true, statut: 'en_ligne' }),
     },
     masques > 0 && {
-      icone: '🙈', texte: `${masques} produit${masques > 1 ? 's' : ''} masqué${masques > 1 ? 's' : ''}`,
+      icone: EyeOff, texte: `${masques} produit${masques > 1 ? 's' : ''} masqué${masques > 1 ? 's' : ''}`,
       detail: 'Invisibles pour les clients',
       action: () => onVoirProduits({ statut: 'masques' }),
     },
@@ -173,7 +175,7 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
           <h1 id="titre-dashboard" className="page-title">Tableau de bord</h1>
           <p className="page-sub">{resumePeriode}</p>
         </div>
-        <button onClick={onActualiser} className="btn-secondary">↻ Actualiser</button>
+        <button onClick={onActualiser} className="btn-secondary"><Icone icone={RefreshCw} taille={18} /> Actualiser</button>
       </div>
 
       {/* ── Choix de la période ── */}
@@ -185,7 +187,6 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
             aria-pressed={periode === p.id}
             className={`db-periode ${periode === p.id ? 'db-periode-on' : ''}`}
           >
-            {p.id === 'perso' && <span aria-hidden="true">📅 </span>}
             {p.label}
           </button>
         ))}
@@ -267,12 +268,12 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
       <div className="db-panel">
         <h2 className="db-panel-title">À faire</h2>
         {taches.length === 0 ? (
-          <p className="db-vide">✓ Rien à signaler, tout est en ordre.</p>
+          <p className="db-vide">Rien à signaler, tout est en ordre.</p>
         ) : (
           <ul className="db-taches">
             {taches.map((t) => (
               <li key={t.texte} className="db-tache">
-                <span className="db-tache-icone" aria-hidden="true">{t.icone}</span>
+                <span className="db-tache-icone"><Icone icone={t.icone} /></span>
                 <div className="db-tache-texte">
                   <b>{t.texte}</b>
                   <span>{t.detail}</span>
@@ -298,7 +299,7 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
                 <li key={t.id} className="db-top-ligne">
                   <span className="db-top-rang">{i + 1}</span>
                   <div className="db-top-thumb">
-                    {t.produit ? <ProduitImage produit={t.produit} emojiSize={20} /> : <span aria-hidden="true">🗑</span>}
+                    {t.produit ? <ProduitImage produit={t.produit} emojiSize={20} /> : <Icone icone={Trash2} />}
                   </div>
                   <div className="db-top-info">
                     <div className="db-top-nom">{t.produit ? t.produit.nom : 'Produit supprimé'}</div>
@@ -326,7 +327,7 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
                   <b>{ile.nb} cmd</b>
                 </div>
                 <div className="db-barre" aria-hidden="true">
-                  <div className="db-barre-remplie db-barre-or" style={{ width: `${(ile.nb / maxIle) * 100}%` }} />
+                  <div className="db-barre-remplie" style={{ width: `${(ile.nb / maxIle) * 100}%` }} />
                 </div>
                 <span className="db-ile-ca">{formatKMF(ile.ca)} KMF</span>
               </li>
@@ -341,98 +342,96 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
 /* ─────────── CSS (préfixe db-) ─────────── */
 const css = `
   .db-periodes {
-    display: inline-flex; background: #fff; border: 1px solid ${C.line}; border-radius: 10px;
-    padding: 3px; gap: 2px; margin-bottom: 14px; max-width: 100%; overflow-x: auto;
+    display: inline-flex; background: ${C.white}; border: 1px solid ${C.line}; border-radius: 8px;
+    padding: 4px; gap: 4px; margin-bottom: 16px; max-width: 100%; overflow-x: auto;
   }
   .db-periode {
     border: none; background: none; cursor: pointer; font-family: inherit;
-    font-size: 13px; font-weight: 600; color: ${C.inkSoft};
-    padding: 9px 14px; border-radius: 8px; white-space: nowrap;
+    font-size: 15px; font-weight: 600; color: ${C.inkSoft};
+    min-height: 44px; padding: 0 16px; border-radius: 6px; white-space: nowrap;
   }
-  .db-periode-on { background: ${C.ink}; color: #fff; }
+  .db-periode-on { background: ${C.ink}; color: ${C.white}; }
 
   /* Période personnalisée */
   .db-perso {
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px;
-    padding: 14px 16px; margin-bottom: 14px;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px;
+    padding: 16px; margin-bottom: 16px;
   }
   .db-perso-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .db-perso-champ .label { margin-bottom: 6px; }
   .db-perso-raccourcis {
     display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
-    margin-top: 12px; font-size: 12.5px; color: ${C.inkSoft};
+    margin-top: 12px; font-size: 14px; color: ${C.inkSoft};
   }
   .db-raccourci {
-    border: 1.5px solid ${C.line}; background: #fff; cursor: pointer; font-family: inherit;
-    font-size: 12.5px; font-weight: 600; color: ${C.inkDeep};
-    padding: 7px 12px; border-radius: 20px;
+    border: 1.5px solid ${C.line}; background: ${C.white}; cursor: pointer; font-family: inherit;
+    font-size: 14px; font-weight: 600; color: ${C.inkDeep};
+    min-height: 44px; padding: 0 16px; border-radius: 8px;
   }
   .db-raccourci:hover { border-color: ${C.ink}; color: ${C.ink}; }
 
   /* Chiffres clés : 2 colonnes sur mobile, 4 sur grand écran */
-  .db-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .db-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
   .db-kpi {
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 16px;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px;
     display: flex; flex-direction: column; gap: 4px; min-width: 0;
   }
-  .db-kpi-label { font-size: 12px; font-weight: 600; color: ${C.inkSoft}; }
+  .db-kpi-label { font-size: 14px; font-weight: 600; color: ${C.inkSoft}; }
   .db-kpi-val { font-size: 22px; font-weight: 800; color: ${C.inkDeep}; line-height: 1.15; }
-  .db-kpi-val small { font-size: 12px; font-weight: 600; color: ${C.inkSoft}; }
+  .db-kpi-val small { font-size: 14px; font-weight: 600; color: ${C.inkSoft}; }
   .db-kpi-positif { color: ${C.leaf}; }
-  .db-kpi-sub { font-size: 11.5px; color: ${C.inkSoft}; line-height: 1.35; }
-  .db-kpi-alerte { color: ${C.goldDeep}; font-weight: 700; }
+  .db-kpi-sub { font-size: 14px; color: ${C.inkSoft}; line-height: 1.35; }
+  .db-kpi-alerte { color: ${C.clay}; font-weight: 700; }
 
   .db-info {
-    font-size: 13px; color: ${C.inkSoft}; background: #fff; border: 1px dashed ${C.line};
-    border-radius: 12px; padding: 12px 14px; margin: 0 0 14px;
+    font-size: 15px; color: ${C.inkSoft}; background: ${C.white}; border: 1px dashed ${C.line};
+    border-radius: 8px; padding: 12px 16px; margin: 0 0 16px;
   }
 
-  .db-panel { background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 18px; margin-bottom: 14px; min-width: 0; }
-  .db-panel-title { font-size: 15px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 14px; }
-  .db-vide { font-size: 13.5px; color: ${C.inkSoft}; margin: 0; }
+  .db-panel { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; min-width: 0; }
+  .db-panel-title { font-size: 18px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 16px; }
+  .db-vide { font-size: 15px; color: ${C.inkSoft}; margin: 0; }
 
   /* À faire */
   .db-taches { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
   .db-tache {
     display: flex; align-items: center; gap: 12px;
-    background: ${C.sand}; border-radius: 10px; padding: 10px 12px;
+    background: ${C.sand}; border-radius: 8px; padding: 12px;
   }
-  .db-tache-icone { font-size: 20px; }
+  .db-tache-icone { color: ${C.ink}; display: flex; flex-shrink: 0; }
   .db-tache-texte { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  .db-tache-texte b { font-size: 13.5px; color: ${C.inkDeep}; }
-  .db-tache-texte span { font-size: 12px; color: ${C.inkSoft}; }
+  .db-tache-texte b { font-size: 15px; color: ${C.inkDeep}; }
+  .db-tache-texte span { font-size: 14px; color: ${C.inkSoft}; }
   .db-tache-btn {
-    background: ${C.ink}; color: #fff; border: none; cursor: pointer; font-family: inherit;
-    font-size: 12.5px; font-weight: 700; padding: 9px 14px; border-radius: 8px; flex-shrink: 0;
+    background: ${C.ink}; color: ${C.white}; border: none; cursor: pointer; font-family: inherit;
+    font-size: 15px; font-weight: 700; min-height: 44px; padding: 0 16px; border-radius: 8px; flex-shrink: 0;
   }
 
-  .db-duo { display: grid; grid-template-columns: 1fr; gap: 0 14px; }
+  .db-duo { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
 
   /* Barres de progression (partagées top + îles) */
-  .db-barre { height: 6px; background: ${C.sand}; border-radius: 3px; overflow: hidden; margin-top: 6px; }
-  .db-barre-remplie { height: 100%; background: ${C.ink}; border-radius: 3px; }
-  .db-barre-or { background: ${C.gold}; }
-
+  .db-barre { height: 8px; background: ${C.sand}; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .db-barre-remplie { height: 100%; background: ${C.ink}; border-radius: 4px; }
+  
   /* Top produits */
   .db-top { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .db-top-ligne { display: flex; align-items: center; gap: 10px; }
-  .db-top-rang { width: 18px; font-size: 13px; font-weight: 800; color: ${C.inkSoft}; text-align: center; flex-shrink: 0; }
-  .db-top-ligne:first-child .db-top-rang { color: ${C.goldDeep}; }
+  .db-top-rang { width: 20px; font-size: 14px; font-weight: 800; color: ${C.inkSoft}; text-align: center; flex-shrink: 0; }
   .db-top-thumb {
-    width: 42px; height: 42px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .db-top-info { flex: 1; min-width: 0; }
-  .db-top-nom { font-size: 13.5px; font-weight: 700; color: ${C.inkDeep}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-top-nom { font-size: 15px; font-weight: 700; color: ${C.inkDeep}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .db-top-chiffres { text-align: right; display: flex; flex-direction: column; flex-shrink: 0; }
-  .db-top-chiffres b { font-size: 13.5px; color: ${C.inkDeep}; }
-  .db-top-chiffres span { font-size: 11.5px; color: ${C.inkSoft}; }
+  .db-top-chiffres b { font-size: 15px; color: ${C.inkDeep}; }
+  .db-top-chiffres span { font-size: 14px; color: ${C.inkSoft}; }
 
   /* Îles */
   .db-iles { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
-  .db-ile-haut { display: flex; justify-content: space-between; font-size: 13.5px; color: ${C.inkDeep}; }
+  .db-ile-haut { display: flex; justify-content: space-between; font-size: 15px; color: ${C.inkDeep}; }
   .db-ile-haut b { font-weight: 800; }
-  .db-ile-ca { display: block; font-size: 11.5px; color: ${C.inkSoft}; margin-top: 4px; }
+  .db-ile-ca { display: block; font-size: 14px; color: ${C.inkSoft}; margin-top: 4px; }
 
   @media (min-width: 800px) {
     .db-kpis { grid-template-columns: repeat(4, 1fr); }

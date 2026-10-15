@@ -11,7 +11,11 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-browser'
+import { RefreshCw, ArrowLeft, Check, Phone, MessageCircle, TriangleAlert } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import Badge from '@/components/ui/Badge'
+import { ChargementListe } from '@/components/ui/Squelette'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 import {
   STATUTS_COMMANDE, referenceCommande, formatDate, labelIle, lienSuivi,
@@ -100,7 +104,7 @@ export default function Commandes({ onChange }) {
           <h1 id="titre-commandes" className="page-title">Commandes</h1>
           <p className="page-sub">Confirme les nouvelles commandes par téléphone, puis suis-les jusqu'à la livraison.</p>
         </div>
-        <button onClick={charger} className="btn-secondary">↻ Actualiser</button>
+        <button onClick={charger} className="btn-secondary"><Icone icone={RefreshCw} taille={18} /> Actualiser</button>
       </div>
 
       {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={message.type === 'err' ? 'err' : 'ac-ok'}>{message.texte}</p>}
@@ -118,12 +122,12 @@ export default function Commandes({ onChange }) {
         aria-label="Rechercher une commande" value={recherche} onChange={(e) => setRecherche(e.target.value)} />
 
       {chargement ? (
-        <div className="state">Chargement…</div>
+        <ChargementListe nb={3} hauteur={88} />
       ) : liste.length === 0 ? (
         <div className="ac-vide">
           {recherche ? 'Aucune commande ne correspond à ta recherche.'
-            : filtre === 'a_confirmer' ? '✓ Aucune commande à confirmer.'
-            : filtre === 'a_surveiller' ? '✓ Rien ne bloque.'
+            : filtre === 'a_confirmer' ? 'Aucune commande à confirmer.'
+            : filtre === 'a_surveiller' ? 'Rien ne bloque.'
             : 'Aucune commande ici pour le moment.'}
         </div>
       ) : (
@@ -135,8 +139,8 @@ export default function Commandes({ onChange }) {
                 <button onClick={() => { setOuverteId(c.id); setMessage(null) }} className="ac-ligne">
                   <span className="ac-ligne-haut">
                     <b>{referenceCommande(c.numero)}</b>
-                    <span className={`ac-badge ac-badge-${s.ton}`}>{s.label}</span>
-                    {aSurveiller(c) && <span className="ac-badge ac-badge-rouge">À surveiller</span>}
+                    <Badge ton={s.ton}>{s.label}</Badge>
+                    {aSurveiller(c) && <Badge ton="rouge">À surveiller</Badge>}
                   </span>
                   <span className="ac-ligne-client">
                     {c.client?.nom || 'Client'} · {c.client?.telephone}
@@ -209,11 +213,11 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
     <section aria-labelledby="titre-detail-cmd" className="ac-detail">
       <style href="admin-commandes" precedence="default">{css}</style>
 
-      <button onClick={onRetour} className="btn-secondary ac-retour">← Toutes les commandes</button>
+      <button onClick={onRetour} className="btn-secondary ac-retour"><Icone icone={ArrowLeft} taille={18} /> Toutes les commandes</button>
 
       <div className="ac-detail-tete">
         <h1 id="titre-detail-cmd" className="page-title">{referenceCommande(c.numero)}</h1>
-        <span className={`ac-badge ac-badge-${s.ton}`}>{s.label}</span>
+        <Badge ton={s.ton}>{s.label}</Badge>
         <span className="ac-date">Passée le {formatDate(c.created_at, true)}</span>
       </div>
 
@@ -229,8 +233,8 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
                 Appelle le client pour vérifier sa commande et son adresse. Rien n'est acheté avant la confirmation.
               </p>
               <div className="ac-contact">
-                <a href={`tel:${c.client?.telephone}`} className="ac-btn-appel">📞 Appeler {c.client?.telephone}</a>
-                <a href={lienWhatsApp(c.client?.telephone, messageWhatsAppClient(c))} target="_blank" rel="noopener noreferrer" className="ac-btn-wa">💬 WhatsApp</a>
+                <a href={`tel:${c.client?.telephone}`} className="ac-btn-appel"><Icone icone={Phone} taille={18} /> Appeler {c.client?.telephone}</a>
+                <a href={lienWhatsApp(c.client?.telephone, messageWhatsAppClient(c))} target="_blank" rel="noopener noreferrer" className="ac-btn-wa"><Icone icone={MessageCircle} taille={18} /> WhatsApp</a>
               </div>
               <label className="ac-case">
                 <input type="checkbox" checked={clientJoint} onChange={(e) => setClientJoint(e.target.checked)} />
@@ -256,11 +260,11 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
             </dl>
             {c.statut !== 'recue' && (
               <div className="ac-contact">
-                <a href={`tel:${c.client?.telephone}`} className="ac-btn-appel">📞 Appeler</a>
-                <a href={lienWhatsApp(c.client?.telephone, messageWhatsAppClient(c))} target="_blank" rel="noopener noreferrer" className="ac-btn-wa">💬 WhatsApp</a>
+                <a href={`tel:${c.client?.telephone}`} className="ac-btn-appel"><Icone icone={Phone} taille={18} /> Appeler</a>
+                <a href={lienWhatsApp(c.client?.telephone, messageWhatsAppClient(c))} target="_blank" rel="noopener noreferrer" className="ac-btn-wa"><Icone icone={MessageCircle} taille={18} /> WhatsApp</a>
               </div>
             )}
-            <button onClick={copierLien} className="ac-lien-suivi">{copie ? '✓ Lien de suivi copié' : 'Copier le lien de suivi du client'}</button>
+            <button onClick={copierLien} className="ac-lien-suivi">{copie ? <><Icone icone={Check} taille={16} /> Lien de suivi copié</> : 'Copier le lien de suivi du client'}</button>
           </div>
 
           {/* ── Contenu ── */}
@@ -287,11 +291,11 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
                     </div>
 
                     {l.etat === 'retiree' && <p className="ac-ligne-note">Retiré : {l.note_etat}</p>}
-                    {manque && <p className="ac-ligne-alerte">⚠️ Il en manque {l.quantite - l.quantite_recue} à l'arrivée. Préviens le client et ajuste l'encaissement.</p>}
+                    {manque && <p className="ac-ligne-alerte"><Icone icone={TriangleAlert} taille={18} /> Il en manque {l.quantite - l.quantite_recue} à l'arrivée. Préviens le client et ajuste l'encaissement.</p>}
 
                     {l.etat === 'indisponible' && (
                       <div className="ac-ligne-alerte">
-                        <p>⚠️ Indisponible chez le fournisseur{l.note_etat ? ` : ${l.note_etat}` : ''}. Appelle le client : on retire le produit, ou on attend ?</p>
+                        <p><Icone icone={TriangleAlert} taille={18} /> Indisponible chez le fournisseur{l.note_etat ? ` : ${l.note_etat}` : ''}. Appelle le client : on retire le produit, ou on attend ?</p>
                         <div className="ac-ligne-boutons">
                           <button onClick={() => { setRetraitPour(l.id); setMotifRetrait('Indisponible, client d\u2019accord pour le retirer') }} className="ac-mini">Retirer de la commande</button>
                           <button onClick={() => lancer('reactiver_ligne_commande', { p_item: l.id }, `« ${l.nom} » est de nouveau à acheter.`)} disabled={occupe} className="ac-mini">Il est de nouveau disponible</button>
@@ -377,97 +381,93 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
 
 /* ─────────── CSS (préfixe ac-) ─────────── */
 const css = `
-  .ac-ok { font-size: 13.5px; color: ${C.leaf}; background: #E8F5EE; border: 1px solid #CDE8D8; border-radius: 10px; padding: 11px 13px; margin: 0 0 14px; font-weight: 600; }
+  .ac-ok { font-size: 15px; color: #2c6e4d; background: #e6f3ec; border: 1px solid #cde5d8; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; font-weight: 600; }
 
-  .ac-filtres { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
+  .ac-filtres { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 4px; }
   .ac-filtre {
-    border: 1.5px solid ${C.line}; background: #fff; cursor: pointer; font-family: inherit; white-space: nowrap;
-    font-size: 13.5px; font-weight: 700; color: ${C.inkSoft}; padding: 10px 14px; border-radius: 22px;
+    border: 1.5px solid ${C.line}; background: ${C.white}; cursor: pointer; font-family: inherit; white-space: nowrap;
+    font-size: 15px; font-weight: 700; color: ${C.inkDeep}; min-height: 44px; padding: 0 16px; border-radius: 8px;
   }
-  .ac-filtre span { font-size: 12px; background: ${C.sand}; border-radius: 10px; padding: 1px 7px; margin-left: 3px; color: ${C.inkDeep}; }
-  .ac-filtre-on { border-color: ${C.ink}; background: ${C.ink}; color: #fff; }
-  .ac-filtre-on span { background: rgba(255,255,255,0.2); color: #fff; }
-  .ac-filtre-alerte:not(.ac-filtre-on) span { background: ${C.clay}; color: #fff; }
-  .ac-recherche { margin-bottom: 14px; }
+  .ac-filtre span { font-size: 14px; margin-left: 4px; color: ${C.inkSoft}; }
+  .ac-filtre-on { border-color: ${C.ink}; background: ${C.ink}; color: ${C.white}; }
+  .ac-filtre-on span { color: rgba(255,255,255,0.85); }
+  .ac-filtre-alerte:not(.ac-filtre-on) span { color: ${C.clay}; font-weight: 800; }
+  .ac-recherche { margin-bottom: 16px; }
 
-  .ac-vide { text-align: center; padding: 40px 16px; color: ${C.inkSoft}; font-size: 14px; background: #fff; border: 1px dashed ${C.line}; border-radius: 14px; }
+  .ac-vide { text-align: center; padding: 32px 16px; color: ${C.inkSoft}; font-size: 15px; background: ${C.white}; border: 1px dashed ${C.line}; border-radius: 12px; }
 
-  .ac-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .ac-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .ac-ligne {
     width: 100%; text-align: left; font-family: inherit; color: ${C.inkDeep}; cursor: pointer;
-    display: flex; flex-direction: column; gap: 6px; background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px; background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px;
   }
   .ac-ligne:hover { border-color: ${C.inkSoft}; }
   .ac-ligne-haut { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .ac-ligne-haut b { font-size: 15px; }
-  .ac-ligne-client { font-size: 13.5px; }
-  .ac-ligne-client em { color: ${C.goldDeep}; font-style: normal; font-weight: 600; }
-  .ac-ligne-bas { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: ${C.inkSoft}; }
-  .ac-ligne-bas b { color: ${C.inkDeep}; font-size: 14.5px; }
-
-  .ac-badge { font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 20px; white-space: nowrap; }
-  .ac-badge-or { background: #FFF1D6; color: #9A6A12; }
-  .ac-badge-bleu { background: #E7EFF2; color: ${C.ink}; }
-  .ac-badge-vert { background: #E8F5EE; color: ${C.leaf}; }
-  .ac-badge-rouge { background: #FBF0EE; color: ${C.clay}; }
-  .ac-badge-gris { background: #EDEFF1; color: ${C.inkSoft}; }
+  .ac-ligne-haut b { font-size: 16px; }
+  .ac-ligne-client { font-size: 15px; }
+  .ac-ligne-client em { color: ${C.inkSoft}; font-style: normal; }
+  .ac-ligne-bas { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; color: ${C.inkSoft}; }
+  .ac-ligne-bas b { color: ${C.inkDeep}; font-size: 16px; }
 
   /* ── Détail ── */
   .ac-retour { margin-bottom: 14px; }
   .ac-detail-tete { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-  .ac-date { font-size: 13px; color: ${C.inkSoft}; }
+  .ac-date { font-size: 14px; color: ${C.inkSoft}; }
   .ac-grille { display: grid; grid-template-columns: 1fr; gap: 0 16px; }
 
-  .ac-carte { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
-  .ac-carte h2 { font-size: 15.5px; font-weight: 800; margin: 0 0 12px; }
-  .ac-carte-action { border: 2px solid ${C.gold}; background: #FFFBF2; }
-  .ac-carte-action .input { margin: 10px 0; background: #fff; }
-  .ac-carte-danger { border-color: #F0D9D5; }
-  .ac-texte { font-size: 13.5px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 12px; }
+  .ac-carte { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .ac-carte h2 { font-size: 18px; font-weight: 800; margin: 0 0 12px; }
+  .ac-carte-action { border: 2px solid ${C.ink}; }
+  .ac-carte-action .input { margin: 12px 0; background: ${C.white}; }
+  .ac-carte-danger { border-color: #e9c9c4; }
+  .ac-texte { font-size: 15px; color: ${C.inkSoft}; line-height: 1.5; margin: 0 0 12px; }
 
   .ac-contact { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 12px; }
   .ac-btn-appel, .ac-btn-wa {
-    display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 10px;
-    font-size: 14px; font-weight: 700; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 8px;
+    font-size: 15px; font-weight: 700; text-decoration: none;
   }
-  .ac-btn-appel { background: ${C.ink}; color: #fff; }
-  .ac-btn-wa { background: #1F9D55; color: #fff; }
-  .ac-case { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; cursor: pointer; padding: 6px 0; }
-  .ac-case input { width: 22px; height: 22px; cursor: pointer; accent-color: ${C.leaf}; }
-  .ac-btn-large { width: 100%; min-height: 50px; }
+  .ac-btn-appel { background: ${C.ink}; color: ${C.white}; }
+  .ac-btn-wa { background: ${C.white}; color: ${C.inkDeep}; border: 1.5px solid ${C.line}; }
+  .ac-btn-wa:hover { border-color: ${C.inkSoft}; }
+  .ac-case { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .ac-case input { width: 22px; height: 22px; cursor: pointer; accent-color: ${C.ink}; }
+  .ac-btn-large { width: 100%; min-height: 52px; }
 
   .ac-infos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; margin: 0 0 14px; }
-  .ac-infos dt { font-size: 11.5px; color: ${C.inkSoft}; font-weight: 600; }
-  .ac-infos dd { margin: 2px 0 0; font-size: 14px; font-weight: 700; word-break: break-word; }
+  .ac-infos dt { font-size: 14px; color: ${C.inkSoft}; font-weight: 600; }
+  .ac-infos dd { margin: 2px 0 0; font-size: 15px; font-weight: 700; word-break: break-word; }
   .ac-infos-large { grid-column: 1 / -1; }
-  .ac-lien-suivi { background: none; border: none; padding: 4px 0; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 700; color: ${C.ink}; text-decoration: underline; text-underline-offset: 3px; }
+  .ac-lien-suivi { background: none; border: none; padding: 0 4px; min-height: 44px; cursor: pointer; font-family: inherit; font-size: 15px; font-weight: 700; color: ${C.ink}; text-decoration: underline; display: inline-flex; align-items: center; gap: 4px; }
 
   .ac-lignes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .ac-ligne-produit { border-radius: 12px; }
   .ac-etat-retiree { opacity: 0.55; }
   .ac-etat-retiree .ac-ligne-produit-info b { text-decoration: line-through; }
   .ac-ligne-produit-haut { display: flex; gap: 12px; align-items: center; }
-  .ac-thumb { width: 46px; height: 46px; border-radius: 9px; overflow: hidden; flex-shrink: 0; background: ${C.sand}; display: flex; align-items: center; justify-content: center; }
+  .ac-thumb { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: ${C.sand}; display: flex; align-items: center; justify-content: center; }
   .ac-ligne-produit-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .ac-ligne-produit-info b { font-size: 14px; }
-  .ac-ligne-produit-info span { font-size: 12.5px; color: ${C.inkSoft}; }
+  .ac-ligne-produit-info b { font-size: 15px; overflow-wrap: anywhere; }
+  .ac-ligne-produit-info span { font-size: 14px; color: ${C.inkSoft}; }
   .ac-envoi { color: ${C.ink} !important; font-weight: 600; }
-  .ac-ligne-total { font-size: 14px; white-space: nowrap; }
-  .ac-ligne-note { font-size: 12.5px; color: ${C.inkSoft}; margin: 6px 0 0 58px; }
-  .ac-ligne-alerte { font-size: 13px; color: #7A5C1E; background: #FFF6E4; border-radius: 10px; padding: 10px 12px; margin: 8px 0 0; }
+  .ac-ligne-total { font-size: 15px; white-space: nowrap; }
+  .ac-ligne-note { font-size: 14px; color: ${C.inkSoft}; margin: 8px 0 0 60px; }
+  .ac-ligne-alerte { font-size: 15px; color: ${C.inkDeep}; background: #fbf0ee; border: 1px solid #efd4cf; border-radius: 8px; padding: 12px; margin: 8px 0 0; }
   .ac-ligne-alerte p { margin: 0 0 8px; line-height: 1.45; }
+  .ac-ligne-alerte svg { vertical-align: -4px; color: ${C.clay}; }
   .ac-ligne-boutons { display: flex; gap: 8px; flex-wrap: wrap; }
   .ac-mini {
-    border: 1.5px solid ${C.line}; background: #fff; cursor: pointer; font-family: inherit;
-    font-size: 13px; font-weight: 700; color: ${C.inkDeep}; padding: 9px 12px; border-radius: 9px; min-height: 40px;
+    border: 1.5px solid ${C.line}; background: ${C.white}; cursor: pointer; font-family: inherit;
+    font-size: 15px; font-weight: 700; color: ${C.inkDeep}; padding: 0 16px; border-radius: 8px; min-height: 44px;
   }
+  .ac-mini:hover:not(:disabled) { border-color: ${C.inkSoft}; }
   .ac-mini:disabled { opacity: 0.5; cursor: not-allowed; }
-  .ac-mini-danger { border-color: #F0D9D5; color: ${C.clay}; }
-  .ac-lien-discret { background: none; border: none; padding: 4px 0 0 58px; cursor: pointer; font-family: inherit; font-size: 12.5px; color: ${C.inkSoft}; text-decoration: underline; }
+  .ac-mini-danger { border-color: #e9c9c4; color: ${C.clay}; }
+  .ac-lien-discret { background: none; border: none; padding: 0 0 0 60px; min-height: 44px; cursor: pointer; font-family: inherit; font-size: 14px; color: ${C.inkSoft}; text-decoration: underline; }
   .ac-form-inline { margin: 8px 0 0; display: flex; flex-direction: column; gap: 8px; }
 
   .ac-totaux { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid ${C.line}; display: flex; flex-direction: column; gap: 6px; }
-  .ac-totaux div { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .ac-totaux div { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
   .ac-totaux dt { color: ${C.inkSoft}; }
   .ac-totaux dd { margin: 0; font-weight: 700; }
   .ac-total dd { font-size: 18px; font-weight: 800; }
@@ -475,15 +475,16 @@ const css = `
 
   .ac-histo { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .ac-histo li { border-left: 3px solid ${C.line}; padding-left: 12px; }
-  .ac-histo li:first-child { border-left-color: ${C.gold}; }
-  .ac-histo b { display: block; font-size: 13.5px; }
-  .ac-histo span { font-size: 12px; color: ${C.inkSoft}; }
-  .ac-histo p { font-size: 13px; margin: 4px 0 0; line-height: 1.45; }
+  .ac-histo li:first-child { border-left-color: ${C.ink}; }
+  .ac-histo b { display: block; font-size: 15px; }
+  .ac-histo span { font-size: 14px; color: ${C.inkSoft}; }
+  .ac-histo p { font-size: 15px; margin: 4px 0 0; line-height: 1.45; }
 
-  .ac-btn-annuler { width: 100%; min-height: 46px; border: 1.5px solid #F0D9D5; background: #fff; color: ${C.clay}; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .ac-motifs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-  .ac-motif { border: 1.5px solid ${C.line}; background: #fff; cursor: pointer; font-family: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 11px; border-radius: 18px; color: ${C.inkDeep}; }
-  .ac-motif-on { border-color: ${C.clay}; background: #FBF0EE; color: ${C.clay}; }
+  .ac-btn-annuler { width: 100%; min-height: 48px; border: 1.5px solid #e9c9c4; background: ${C.white}; color: ${C.clay}; border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .ac-btn-annuler:hover { background: #fbf0ee; }
+  .ac-motifs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .ac-motif { border: 1.5px solid ${C.line}; background: ${C.white}; cursor: pointer; font-family: inherit; font-size: 15px; font-weight: 600; min-height: 44px; padding: 0 16px; border-radius: 8px; color: ${C.inkDeep}; }
+  .ac-motif-on { border-color: ${C.clay}; background: #fbf0ee; color: ${C.clay}; }
   .ac-carte-danger .input { margin-bottom: 10px; }
 
   @media (min-width: 900px) {

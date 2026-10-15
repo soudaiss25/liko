@@ -15,7 +15,9 @@
 */
 
 import { useState } from 'react'
+import { ArrowLeft, X, Plus } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
+import Icone from '@/components/ui/Icone'
 import { envoyerPhotoProduit } from '@/lib/photos'
 import { CATEGORIES, ORIGINES, formatKMF, prixPieceEnLot } from '@/lib/produit'
 
@@ -151,7 +153,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
 
       <div className="page-head">
         <h1 id="titre-form" className="page-title">{produit ? 'Modifier le produit' : 'Nouveau produit'}</h1>
-        <button onClick={onAnnuler} className="btn-secondary">← Retour à la liste</button>
+        <button onClick={onAnnuler} className="btn-secondary"><Icone icone={ArrowLeft} taille={18} /> Retour à la liste</button>
       </div>
 
       <div className="fp-card">
@@ -175,7 +177,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
                 )}
                 <button type="button" onClick={() => retirerPhoto(url)} className="fp-photo-remove"
                   aria-label={`Retirer la photo ${i + 1}`}>
-                  ✕
+                  <Icone icone={X} taille={18} />
                 </button>
               </div>
             ))}
@@ -189,7 +191,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
             {form.images.length + uploadEnCours < MAX_PHOTOS && (
               <label className="fp-photo fp-photo-add">
                 <input type="file" accept="image/*" multiple onChange={ajouterPhotos} className="visually-hidden" />
-                <span className="fp-photo-plus" aria-hidden="true">+</span>
+                <span className="fp-photo-plus"><Icone icone={Plus} taille={24} /></span>
                 <span>Ajouter</span>
               </label>
             )}
@@ -263,7 +265,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
             {nbLot > 0 && pieceLot > 0 && (
               <p className={`fp-gros-resume ${lotIncoherent ? 'fp-gros-err' : ''}`} aria-live="polite">
                 {lotIncoherent ? (
-                  <>⚠️ {formatKMF(pieceLot)} KMF la pièce en lot, c'est plus cher ou égal au prix à l'unité ({formatKMF(prixUnite)} KMF).</>
+                  <>{formatKMF(pieceLot)} KMF la pièce en lot, c'est plus cher ou égal au prix à l'unité ({formatKMF(prixUnite)} KMF).</>
                 ) : (
                   <>
                     Lot de {nbLot} × {formatKMF(pieceLot)} KMF = <b>{formatKMF(totalLot)} KMF le lot</b>
@@ -310,55 +312,56 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
 /* ─────────── CSS (préfixe fp-) ─────────── */
 const css = `
   .fp-wrap { max-width: 700px; }
-  .fp-card { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 24px; }
+  .fp-card { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 24px; }
 
   /* ── Photos ── */
-  .fp-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+  .fp-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; }
   .fp-photo {
-    position: relative; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden;
+    position: relative; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden;
     background: ${C.sand}; border: 1.5px solid ${C.line};
   }
   .fp-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .fp-photo-principale { border-color: ${C.ink}; border-width: 2px; }
   .fp-photo-badge {
-    position: absolute; left: 6px; bottom: 6px;
-    background: ${C.ink}; color: #fff; font-size: 10.5px; font-weight: 700;
-    padding: 3px 7px; border-radius: 6px;
+    position: absolute; left: 4px; bottom: 4px;
+    background: ${C.ink}; color: ${C.white}; font-size: 13px; font-weight: 700;
+    padding: 4px 8px; border-radius: 6px;
   }
   .fp-photo-star {
-    position: absolute; left: 6px; bottom: 6px;
-    background: rgba(255,255,255,0.92); color: ${C.inkDeep}; border: none; cursor: pointer;
-    font-size: 10.5px; font-weight: 700; font-family: inherit; padding: 4px 7px; border-radius: 6px;
+    position: absolute; left: 4px; bottom: 4px; min-height: 32px;
+    background: ${C.white}; color: ${C.inkDeep}; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 700; font-family: inherit; padding: 0 8px; border-radius: 6px;
   }
   .fp-photo-remove {
-    position: absolute; top: 6px; right: 6px;
-    width: 30px; height: 30px; border-radius: 50%; border: none; cursor: pointer;
-    background: rgba(20,58,75,0.75); color: #fff; font-size: 13px; line-height: 1;
+    position: absolute; top: 0; right: 0;
+    width: 44px; height: 44px; border: none; cursor: pointer; background: transparent; color: ${C.white};
+    display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px;
   }
+  .fp-photo-remove svg { background: rgba(20,58,75,0.8); border-radius: 50%; padding: 3px; width: 26px; height: 26px; }
   .fp-photo-remove:hover { background: ${C.clay}; }
   .fp-photo-loading {
     display: flex; align-items: center; justify-content: center;
-    font-size: 12.5px; font-weight: 600; color: ${C.inkSoft};
+    font-size: 14px; font-weight: 600; color: ${C.inkSoft};
   }
   .fp-photo-add {
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     border-style: dashed; border-color: ${C.inkSoft}; cursor: pointer;
-    font-size: 13px; font-weight: 700; color: ${C.ink};
+    font-size: 14px; font-weight: 700; color: ${C.ink};
   }
-  .fp-photo-add:hover { background: #fff; border-color: ${C.ink}; }
+  .fp-photo-add:hover { background: ${C.white}; border-color: ${C.ink}; }
   .fp-photo-add:focus-within { outline: 2px solid ${C.ink}; outline-offset: 2px; }
-  .fp-photo-plus { font-size: 26px; line-height: 1; font-weight: 500; }
+  .fp-photo-plus { display: flex; }
 
   /* ── Bloc lot ── */
-  .fp-gros { background: #FFFBF2; border: 1px solid #F1DDAE; border-radius: 12px; padding: 16px 16px 4px; margin: -4px 0 18px; }
-  .fp-gros-resume { font-size: 13px; color: ${C.leaf}; font-weight: 600; line-height: 1.5; margin: -4px 0 14px; }
+  .fp-gros { background: ${C.bgGrey}; border: 1px solid ${C.line}; border-radius: 8px; padding: 16px 16px 4px; margin: 0 0 16px; }
+  .fp-gros-resume { font-size: 15px; color: #2c6e4d; font-weight: 600; line-height: 1.5; margin: 0 0 16px; }
   .fp-gros-resume b { font-weight: 800; }
   .fp-gros-err { color: ${C.clay}; }
 
-  .fp-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; flex-wrap: wrap; }
+  .fp-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
 
   @media (max-width: 700px) {
-    .fp-card { padding: 18px; }
+    .fp-card { padding: 16px; }
     .fp-photos { grid-template-columns: repeat(3, 1fr); }
   }
 `
