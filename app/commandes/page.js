@@ -14,7 +14,12 @@ import { createClient } from '@/lib/supabase-browser'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import BarreNavMobile from '@/components/BarreNavMobile'
+import { Package } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Badge from '@/components/ui/Badge'
+import Bouton from '@/components/ui/Bouton'
+import EtatVide from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 import { formatKMF } from '@/lib/produit'
 import {
   STATUTS_COMMANDE, referenceCommande, formatDate, suivisMemorises, messageErreurCommande,
@@ -93,23 +98,17 @@ export default function PageMesCommandes() {
         <h1 className="mc-titre">Mes commandes</h1>
 
         {chargement ? (
-          <p className="mc-etat">Chargement…</p>
+          <ChargementListe nb={3} hauteur={150} />
         ) : commandes.length === 0 ? (
           <div className="mc-vide">
-            <div className="mc-vide-emoji" aria-hidden="true">📦</div>
-            <h2>Aucune commande à afficher</h2>
-            {connecte ? (
-              <p>Tes commandes apparaîtront ici dès ta première commande.</p>
-            ) : (
-              <p>
-                Tu as commandé sans compte ? Ouvre le lien de suivi reçu après ta commande.
-                Tu peux aussi te connecter pour retrouver toutes tes commandes.
-              </p>
-            )}
-            <div className="mc-vide-actions">
-              <a href="/" className="mc-btn">Voir le catalogue</a>
-              {!connecte && <a href="/login?suite=/commandes" className="mc-lien">Se connecter</a>}
-            </div>
+            <EtatVide
+              icone={Package}
+              texte={connecte
+                ? 'Aucune commande pour le moment. Elles apparaîtront ici dès ta première commande.'
+                : 'Aucune commande sur cet appareil. Tu as commandé sans compte ? Ouvre le lien de suivi reçu après ta commande, ou connecte-toi.'}
+              action={{ label: 'Voir le catalogue', href: '/' }}
+            />
+            {!connecte && <a href="/login?suite=/commandes" className="mc-lien">Se connecter</a>}
           </div>
         ) : (
           <>
@@ -126,9 +125,7 @@ export default function PageMesCommandes() {
                   {sansCompte.length} commande{sansCompte.length > 1 ? 's' : ''} passée{sansCompte.length > 1 ? 's' : ''} sans compte sur cet appareil.
                   Ajoute-{sansCompte.length > 1 ? 'les' : 'la'} à ton compte pour {sansCompte.length > 1 ? 'les' : 'la'} retrouver partout.
                 </p>
-                <button onClick={rattacherTout} disabled={occupe} className="mc-btn" style={{ border: 'none', cursor: 'pointer' }}>
-                  Ajouter à mon compte
-                </button>
+                <Bouton variante="principal" onClick={rattacherTout} disabled={occupe}>Ajouter à mon compte</Bouton>
               </div>
             )}
             <Section titre="En cours" liste={enCours} />
@@ -156,7 +153,7 @@ function Section({ titre, liste }) {
               <a href={`/suivi/${c.code_suivi}`} className="mc-carte">
                 <span className="mc-carte-haut">
                   <b>{referenceCommande(c.numero)}</b>
-                  <span className={`mc-badge mc-badge-${s.ton}`}>{s.label}</span>
+                  <Badge ton={s.ton}>{s.label}</Badge>
                 </span>
                 <span className="mc-apercu">
                   {(c.apercu || []).map((p, i) => (
@@ -181,57 +178,42 @@ function Section({ titre, liste }) {
 }
 
 const css = `
-  .mc-rattacher { background: #FFF6E4; border: 1px solid #F1DDAE; color: #7A5C1E; border-radius: 12px; padding: 14px; margin: 0 0 16px; font-size: 14px; line-height: 1.5; }
-  .mc-rattacher p { margin: 0 0 10px; }
-  .mc-rattacher button:disabled { opacity: 0.6; cursor: wait; }
-  .mc-msg-ok { color: ${C.leaf}; font-weight: 600; }
-  .mc-msg-err { color: ${C.clay}; font-weight: 600; }
+  .mc-rattacher { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin: 0 0 16px; font-size: 15px; line-height: 1.5; }
+  .mc-rattacher p { margin: 0 0 12px; }
+  .mc-msg-ok { color: #2c6e4d; font-weight: 600; }
+  .mc-msg-err { color: #a8453a; font-weight: 600; }
   * { box-sizing: border-box; }
   .mc-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: var(--font-jakarta), system-ui, sans-serif; padding-bottom: 72px; }
-  .mc-page { max-width: 820px; margin: 0 auto; padding: 18px 16px 30px; }
-  .mc-titre { font-size: 24px; font-weight: 800; margin: 4px 0 16px; letter-spacing: -0.3px; }
-  .mc-etat { color: ${C.inkSoft}; text-align: center; padding: 50px 0; }
+  .mc-page { max-width: 820px; margin: 0 auto; padding: 16px 16px 32px; }
+  .mc-titre { font-size: 24px; font-weight: 800; margin: 8px 0 16px; }
 
-  .mc-info { font-size: 13.5px; background: #fff; border: 1px solid ${C.line}; border-radius: 12px; padding: 12px 14px; margin: 0 0 18px; line-height: 1.5; color: ${C.inkSoft}; }
+  .mc-info { font-size: 15px; background: ${C.white}; border: 1px solid ${C.line}; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.5; color: ${C.inkSoft}; }
   .mc-info a { color: ${C.ink}; font-weight: 700; }
 
-  .mc-vide { text-align: center; background: #fff; border: 1px solid ${C.line}; border-radius: 18px; padding: 40px 20px; }
-  .mc-vide-emoji { font-size: 42px; margin-bottom: 8px; }
-  .mc-vide h2 { font-size: 18px; margin: 0 0 8px; }
-  .mc-vide p { font-size: 14px; color: ${C.inkSoft}; line-height: 1.55; margin: 0 auto 18px; max-width: 420px; }
-  .mc-vide-actions { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-  .mc-btn { display: inline-flex; align-items: center; min-height: 50px; padding: 0 22px; border-radius: 12px; background: ${C.gold}; color: ${C.inkDeep}; font-weight: 800; text-decoration: none; }
-  .mc-lien { font-weight: 700; color: ${C.ink}; }
+  .mc-vide { display: flex; flex-direction: column; align-items: center; background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding-bottom: 16px; }
+  .mc-lien { font-weight: 700; color: ${C.ink}; min-height: 44px; display: inline-flex; align-items: center; }
 
-  .mc-section { margin-bottom: 22px; }
-  .mc-section-titre { font-size: 15px; font-weight: 800; margin: 0 0 10px; color: ${C.inkSoft}; }
-  .mc-section-titre span { font-size: 12px; background: #fff; border: 1px solid ${C.line}; border-radius: 10px; padding: 1px 8px; margin-left: 4px; }
+  .mc-section { margin-bottom: 24px; }
+  .mc-section-titre { font-size: 16px; font-weight: 700; margin: 0 0 12px; color: ${C.inkSoft}; }
+  .mc-section-titre span { font-size: 14px; margin-left: 4px; }
 
-  .mc-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .mc-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .mc-carte {
-    display: flex; flex-direction: column; gap: 12px; background: #fff; border: 1px solid ${C.line};
-    border-radius: 16px; padding: 14px 16px; text-decoration: none; color: ${C.inkDeep};
+    display: flex; flex-direction: column; gap: 12px; background: ${C.white}; border: 1px solid ${C.line};
+    border-radius: 12px; padding: 16px; text-decoration: none; color: ${C.inkDeep};
   }
   .mc-carte:hover { border-color: ${C.inkSoft}; }
-  .mc-carte-haut { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .mc-carte-haut b { font-size: 15px; }
-  .mc-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
-  .mc-badge-or { background: #FFF1D6; color: #9A6A12; }
-  .mc-badge-bleu { background: #E7EFF2; color: ${C.ink}; }
-  .mc-badge-vert { background: #E8F5EE; color: ${C.leaf}; }
-  .mc-badge-rouge { background: #FBF0EE; color: ${C.clay}; }
-  .mc-badge-gris { background: #EDEFF1; color: ${C.inkSoft}; }
+  .mc-carte-haut { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .mc-carte-haut b { font-size: 16px; }
 
   .mc-apercu { display: flex; align-items: center; gap: 8px; }
-  .mc-thumb { width: 46px; height: 46px; border-radius: 10px; overflow: hidden; background: ${C.sand}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .mc-apercu-texte { font-size: 13px; font-weight: 600; margin-left: 4px; line-height: 1.4; }
-  .mc-apercu-texte span { color: ${C.inkSoft}; font-weight: 500; font-size: 12.5px; }
+  .mc-thumb { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: ${C.sand}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mc-apercu-texte { font-size: 15px; font-weight: 600; margin-left: 4px; line-height: 1.4; }
+  .mc-apercu-texte span { color: ${C.inkSoft}; font-weight: 500; font-size: 14px; }
 
-  .mc-carte-bas { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid ${C.line}; padding-top: 10px; }
+  .mc-carte-bas { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid ${C.line}; padding-top: 12px; }
   .mc-carte-bas b { font-size: 16px; }
-  .mc-voir { font-size: 13.5px; font-weight: 700; color: ${C.ink}; }
-
-  a:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
+  .mc-voir { font-size: 15px; font-weight: 700; color: ${C.ink}; }
 
   @media (min-width: 700px) { .mc-liste { grid-template-columns: 1fr 1fr; } }
   @media (min-width: 1000px) { .mc-app { padding-bottom: 0; } }

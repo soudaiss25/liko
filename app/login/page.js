@@ -2,99 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-
-import { C } from '@/lib/theme'
-/* ─────────── Tokens (alignés sur le logo) ─────────── */
-const s = {
-  page: {
-    minHeight: '100vh',
-    background: `radial-gradient(120% 60% at 50% 0%, #FFFFFF 0%, ${C.sand} 58%)`,
-    display: 'flex', flexDirection: 'column',
-    alignItems: 'center', justifyContent: 'center',
-    padding: '24px 18px 40px',
-    fontFamily: "var(--font-jakarta), system-ui, -apple-system, sans-serif",
-  },
-  logoWrap: {
-    display: 'flex', flexDirection: 'column',
-    alignItems: 'center', marginBottom: '10px',
-  },
-  tagline: {
-    fontSize: '14px', color: C.inkSoft, fontWeight: 500, marginTop: '-6px',
-  },
-  card: {
-    width: '100%', maxWidth: '420px',
-    background: C.white,
-    borderWidth: '1px', borderStyle: 'solid', borderColor: C.line,
-    borderRadius: '20px',
-    padding: '28px 24px 24px',
-    boxShadow: '0 4px 24px rgba(29,78,99,0.06)',
-  },
-  title: {
-    fontSize: '22px', fontWeight: 800, color: C.inkDeep, margin: '0 0 4px',
-    letterSpacing: '-0.4px',
-  },
-  sub: {
-    fontSize: '14px', color: C.inkSoft, margin: '0 0 24px', lineHeight: 1.4,
-  },
-  field: {
-    display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px',
-  },
-  label: { fontSize: '13px', fontWeight: 700, color: C.inkDeep },
-  hint: { fontSize: '12px', color: C.inkSoft, fontWeight: 500 },
-  input: {
-    height: '54px', padding: '0 16px', width: '100%',
-    borderWidth: '1.5px', borderStyle: 'solid', borderColor: C.line,
-    borderRadius: '13px',
-    fontSize: '16px', fontFamily: 'inherit', color: C.inkDeep,
-    background: C.sand, outline: 'none',
-    transition: 'border-color .15s, background .15s',
-  },
-  inputFocus: { borderColor: C.ink, background: C.white },
-  cta: {
-    width: '100%', height: '56px', border: 'none', borderRadius: '14px',
-    background: C.ink, color: C.white,
-    fontSize: '16px', fontWeight: 700, fontFamily: 'inherit',
-    cursor: 'pointer', marginTop: '6px', transition: 'background .15s',
-  },
-  ctaDisabled: {
-    width: '100%', height: '56px', border: 'none', borderRadius: '14px',
-    background: C.line, color: '#A9B4B9',
-    fontSize: '16px', fontWeight: 700, fontFamily: 'inherit',
-    cursor: 'not-allowed', marginTop: '6px',
-  },
-  err: {
-    fontSize: '14px', color: C.clay,
-    background: '#FBF0EE',
-    borderWidth: '1px', borderStyle: 'solid', borderColor: '#F0D9D5',
-    padding: '12px 14px', borderRadius: '12px', margin: '0 0 4px', lineHeight: 1.4,
-  },
-  links: {
-    display: 'flex', flexDirection: 'column', gap: '12px',
-    alignItems: 'center', marginTop: '22px',
-  },
-  link: {
-    fontSize: '14px', color: C.ink, textDecoration: 'none', fontWeight: 600,
-  },
-  linkMute: {
-    fontSize: '14px', color: C.inkSoft, textDecoration: 'none', fontWeight: 500,
-  },
-  foot: {
-    fontSize: '13px', color: '#A9B4B9', textAlign: 'center', marginTop: '22px',
-  },
-}
-
-/* ─────────── Logo (ton PNG détouré dans /public) ─────────── */
-function Logo({ size = 150 }) {
-  return (
-    <img
-      src="/logo.png"
-      alt="Salut"
-      width={size}
-      height={size}
-      style={{ objectFit: 'contain', display: 'block' }}
-    />
-  )
-}
+import CadreAuth from '@/components/ui/CadreAuth'
+import Champ, { Message } from '@/components/ui/Champ'
+import Bouton from '@/components/ui/Bouton'
+import { WHATSAPP_SERVICE } from '@/lib/config'
 
 /* Page à rouvrir après la connexion (?suite=/admin).
    Sécurité : on n'accepte qu'un chemin INTERNE ("/admin"), jamais une adresse
@@ -119,7 +30,6 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [erreur, setErreur] = useState('')
-  const [focused, setFocused] = useState(null)
   const [pageDemandee, setPageDemandee] = useState(null)
   const supabase = createClient()
 
@@ -175,73 +85,56 @@ export default function Login() {
 
   const disabled = loading || !identifiant || !password
 
-  const inputStyle = (name) => ({
-    ...s.input,
-    ...(focused === name ? s.inputFocus : {}),
-  })
+  const soumettre = (e) => {
+    e.preventDefault()
+    if (!disabled) connecter()
+  }
 
   return (
-    <main style={s.page}>
-      <div style={s.logoWrap}>
-        <Logo />
-        <div style={s.tagline}>La marketplace des Comores</div>
-      </div>
-
-      <div style={s.card}>
-        <h1 style={s.title}>Content de te revoir 👋</h1>
-        <p style={s.sub}>
-          {pageDemandee
-            ? 'Cette page est protégée : connecte-toi pour y accéder.'
-            : 'Connecte-toi pour suivre tes commandes.'}
-        </p>
-
-        <div style={s.field}>
-          <label htmlFor="identifiant" style={s.label}>Téléphone ou nom d'utilisateur</label>
-          <span style={s.hint}>Le même que tu as choisi à l'inscription.</span>
+    <CadreAuth
+      titre="Connexion"
+      sous={pageDemandee
+        ? 'Cette page est protégée : connecte-toi pour y accéder.'
+        : 'Connecte-toi pour suivre tes commandes.'}
+      liens={
+        <>
+          <span>Pas encore de compte ? <a href="/register">Créer un compte</a></span>
+          {WHATSAPP_SERVICE && (
+            <span>Mot de passe perdu ? <a href={`https://wa.me/${WHATSAPP_SERVICE}`}>Écris-nous sur WhatsApp</a></span>
+          )}
+        </>
+      }
+    >
+      <form onSubmit={soumettre} noValidate>
+        <Champ id="identifiant" label="Téléphone ou nom d'utilisateur" aide="Le même que tu as choisi à l'inscription.">
           <input
             id="identifiant"
-            style={inputStyle('id')}
-            placeholder="+269 XXX XX XX ou ton username"
+            className="ui-input"
+            placeholder="+269 333 44 55 ou ton nom d'utilisateur"
             autoComplete="username"
             autoCapitalize="none"
             value={identifiant}
             onChange={(e) => setIdentifiant(e.target.value)}
-            onFocus={() => setFocused('id')}
-            onBlur={() => setFocused(null)}
-            onKeyDown={(e) => e.key === 'Enter' && !disabled && connecter()}
           />
-        </div>
+        </Champ>
 
-        <div style={s.field}>
-          <label htmlFor="password" style={s.label}>Mot de passe</label>
+        <Champ id="password" label="Mot de passe">
           <input
             id="password"
-            style={inputStyle('pw')}
+            className="ui-input"
             type="password"
-            placeholder="••••••••"
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onFocus={() => setFocused('pw')}
-            onBlur={() => setFocused(null)}
-            onKeyDown={(e) => e.key === 'Enter' && !disabled && connecter()}
           />
-        </div>
+        </Champ>
 
-        {erreur && <p role="alert" style={s.err}>{erreur}</p>}
+        {erreur && <Message ton="err">{erreur}</Message>}
 
-        <button onClick={connecter} disabled={disabled} style={disabled ? s.ctaDisabled : s.cta}>
+        <Bouton type="submit" variante="principal" grand disabled={disabled}>
           {loading ? 'Connexion…' : 'Se connecter'}
-        </button>
-
-        <div style={s.links}>
-          <a href="/forgot" style={s.link}>Mot de passe oublié</a>
-          <a href="/forgot?type=numero" style={s.link}>J'ai changé de numéro</a>
-          <a href="/register" style={s.linkMute}>Pas encore de compte ? Créer un compte</a>
-        </div>
-      </div>
-
-      <p style={s.foot}>Livraison sur les trois îles</p>
-    </main>
+        </Bouton>
+      </form>
+    </CadreAuth>
   )
 }

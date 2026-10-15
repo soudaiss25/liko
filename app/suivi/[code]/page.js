@@ -12,6 +12,10 @@ import { createClient } from '@/lib/supabase-browser'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import BarreNavMobile from '@/components/BarreNavMobile'
+import { ArrowLeft, Check, SearchX } from 'lucide-react'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
+import { Squelette } from '@/components/ui/Squelette'
 import ProduitImage from '@/components/ProduitImage'
 import FriseCommande from '@/components/commande/FriseCommande'
 import { formatKMF } from '@/lib/produit'
@@ -99,16 +103,19 @@ export default function PageSuivi() {
       <div className="sv-app">
         <style>{css}</style>
         <Header />
-        <main className="sv-vide">
+        <main className="sv-page">
           {etat === 'chargement' ? (
-            <p>Chargement de ta commande…</p>
+            <div role="status" aria-busy="true" className="sv-squelette">
+              <span className="visually-hidden">Chargement de ta commande…</span>
+              <Squelette hauteur={140} rayon={12} />
+              <Squelette hauteur={220} rayon={12} />
+            </div>
           ) : (
-            <>
-              <div className="sv-vide-emoji" aria-hidden="true">🔍</div>
-              <h1>Commande introuvable</h1>
-              <p>Le lien est peut-être incomplet. Copie-le en entier depuis le message reçu, ou retrouve tes commandes ici :</p>
-              <a href="/commandes" className="sv-btn">Mes commandes</a>
-            </>
+            <EtatVide
+              icone={SearchX}
+              texte="Commande introuvable. Le lien est peut-être incomplet : copie-le en entier depuis le message reçu, ou retrouve tes commandes dans « Mes commandes »."
+              action={{ label: 'Mes commandes', href: '/commandes' }}
+            />
           )}
         </main>
         <BarreNavMobile actif="commandes" />
@@ -128,7 +135,7 @@ export default function PageSuivi() {
       <Header />
 
       <main className="sv-page">
-        <a href="/commandes" className="sv-retour">← Mes commandes</a>
+        <a href="/commandes" className="sv-retour"><Icone icone={ArrowLeft} taille={18} /> Mes commandes</a>
 
         {/* ── En-tête : la réponse à "où en est ma commande ?" ── */}
         <section className={`sv-hero sv-hero-${statut.ton}`}>
@@ -160,16 +167,16 @@ export default function PageSuivi() {
           <div className="sv-alerte">
             {user ? (
               <>
-                <p style={{ margin: '0 0 10px' }}>
+                <p style={{ margin: '0 0 12px' }}>
                   Cette commande a été passée sans compte. Ajoute-la au tien pour la retrouver sur tous tes appareils.
                 </p>
-                <button onClick={rattacher} disabled={occupe} className="sv-btn" style={{ cursor: 'pointer' }}>
+                <button onClick={rattacher} disabled={occupe} className="sv-btn">
                   Ajouter à mon compte
                 </button>
               </>
             ) : (
               <p style={{ margin: 0 }}>
-                <a href={`/login?suite=/suivi/${code}`} style={{ color: C.goldDeep, fontWeight: 700 }}>Connecte-toi ou crée un compte</a>,
+                <a href={`/login?suite=/suivi/${code}`} style={{ color: C.ink, fontWeight: 700 }}>Connecte-toi ou crée un compte</a>,
                 puis reviens sur ce lien.
               </p>
             )}
@@ -178,7 +185,7 @@ export default function PageSuivi() {
 
         {lignesIndispo.length > 0 && commande.statut !== 'annulee' && (
           <p className="sv-alerte">
-            ⚠️ {lignesIndispo.length > 1 ? 'Certains produits sont' : 'Un produit est'} en rupture chez notre fournisseur.
+            {lignesIndispo.length > 1 ? 'Certains produits sont' : 'Un produit est'} en rupture chez notre fournisseur.
             Nous te contactons pour te proposer une solution.
           </p>
         )}
@@ -229,9 +236,9 @@ export default function PageSuivi() {
 
             {/* ── Actions ── */}
             <div className="sv-actions">
-              <button onClick={partager} className="sv-btn-secondaire">{copie ? '✓ Lien copié' : 'Partager ce suivi'}</button>
+              <button onClick={partager} className="sv-btn-secondaire">{copie ? <><Icone icone={Check} taille={18} /> Lien copié</> : 'Partager ce suivi'}</button>
               {WHATSAPP_SERVICE && (
-                <a className="sv-btn-whatsapp" target="_blank" rel="noopener noreferrer"
+                <a className="sv-btn-secondaire" target="_blank" rel="noopener noreferrer"
                   href={lienWhatsApp(WHATSAPP_SERVICE, `Bonjour, j'ai une question sur ma commande ${referenceCommande(commande.numero)}.`)}>
                   Écrire au service client
                 </a>
@@ -260,71 +267,68 @@ const css = `
   .sv-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: var(--font-jakarta), system-ui, sans-serif; padding-bottom: 72px; }
 
   .sv-page { max-width: 980px; margin: 0 auto; padding: 16px; }
-  .sv-retour { display: inline-block; font-size: 14px; font-weight: 700; color: ${C.ink}; text-decoration: none; padding: 6px 0 12px; }
-
-  .sv-vide { max-width: 440px; margin: 0 auto; padding: 70px 20px; text-align: center; color: ${C.inkSoft}; }
-  .sv-vide-emoji { font-size: 42px; margin-bottom: 8px; }
-  .sv-vide h1 { font-size: 20px; color: ${C.inkDeep}; margin: 0 0 8px; }
-  .sv-vide p { font-size: 14px; line-height: 1.55; margin: 0 0 18px; }
+  .sv-retour { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-size: 15px; font-weight: 700; color: ${C.ink}; text-decoration: none; }
+  .sv-squelette { display: flex; flex-direction: column; gap: 12px; }
 
   /* ── En-tête ── */
-  .sv-hero { background: ${C.ink}; color: #fff; border-radius: 18px; padding: 20px; margin-bottom: 14px; }
+  .sv-hero { background: ${C.ink}; color: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .sv-hero-vert { background: ${C.leaf}; }
   .sv-hero-rouge { background: ${C.clay}; }
-  .sv-hero-gris { background: #6B7A81; }
+  .sv-hero-gris { background: ${C.inkSoft}; }
   .sv-hero-or { background: ${C.inkDeep}; }
-  .sv-hero-haut { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; opacity: 0.85; }
-  .sv-ref { font-weight: 800; letter-spacing: 0.3px; }
-  .sv-hero h1 { font-size: 26px; font-weight: 800; margin: 12px 0 6px; letter-spacing: -0.4px; }
-  .sv-hero p { font-size: 14.5px; line-height: 1.5; margin: 0; opacity: 0.92; max-width: 520px; }
+  .sv-hero-haut { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+  .sv-ref { font-weight: 800; }
+  .sv-hero h1 { font-size: 24px; font-weight: 800; margin: 12px 0 8px; }
+  .sv-hero p { font-size: 15px; line-height: 1.5; margin: 0; max-width: 520px; }
   .sv-montant {
     display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap;
-    margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.2);
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.3);
   }
-  .sv-montant span { font-size: 13px; opacity: 0.85; }
+  .sv-montant span { font-size: 14px; }
   .sv-montant b { font-size: 22px; font-weight: 800; }
 
-  .sv-message { font-size: 14px; border-radius: 12px; padding: 12px 14px; margin: 0 0 14px; font-weight: 600; }
-  .sv-message-ok { background: #E8F5EE; color: ${C.leaf}; }
-  .sv-message-err { background: #FBF0EE; color: ${C.clay}; }
-  .sv-alerte { font-size: 13.5px; background: #FFF6E4; border: 1px solid #F1DDAE; color: #7A5C1E; border-radius: 12px; padding: 12px 14px; margin: 0 0 14px; line-height: 1.5; }
+  .sv-message { font-size: 15px; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; font-weight: 600; }
+  .sv-message-ok { background: #E8F5EE; color: #2c6e4d; }
+  .sv-message-err { background: #FBF0EE; color: #a8453a; }
+  .sv-alerte { font-size: 15px; background: ${C.white}; border: 1px solid ${C.line}; color: ${C.inkDeep}; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.5; }
 
-  .sv-grille { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  .sv-carte { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
-  .sv-carte h2 { font-size: 16px; font-weight: 800; margin: 0 0 16px; }
+  .sv-grille { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .sv-carte { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .sv-carte h2 { font-size: 18px; font-weight: 800; margin: 0 0 16px; }
 
   .sv-lignes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
   .sv-ligne { display: flex; gap: 12px; align-items: center; }
   .sv-retiree { opacity: 0.55; }
   .sv-retiree b { text-decoration: line-through; }
-  .sv-thumb { width: 50px; height: 50px; border-radius: 10px; overflow: hidden; flex-shrink: 0; background: ${C.sand}; display: flex; align-items: center; justify-content: center; }
+  .sv-thumb { width: 52px; height: 52px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: ${C.sand}; display: flex; align-items: center; justify-content: center; }
   .sv-ligne-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .sv-ligne-info b { font-size: 14px; }
-  .sv-ligne-info span { font-size: 12.5px; color: ${C.inkSoft}; }
+  .sv-ligne-info b { font-size: 15px; overflow-wrap: anywhere; }
+  .sv-ligne-info span { font-size: 14px; color: ${C.inkSoft}; }
 
   .sv-totaux { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid ${C.line}; display: flex; flex-direction: column; gap: 6px; }
-  .sv-totaux div { display: flex; justify-content: space-between; font-size: 14px; }
+  .sv-totaux div { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
   .sv-totaux dt { color: ${C.inkSoft}; }
   .sv-totaux dd { margin: 0; font-weight: 700; }
   .sv-total dd { font-size: 18px; font-weight: 800; }
   .sv-total dt { color: ${C.inkDeep} !important; font-weight: 700; }
 
-  .sv-adresse { font-size: 14px; line-height: 1.6; margin: 0; }
-  .sv-adresse span { color: ${C.inkSoft}; font-size: 13px; }
+  .sv-adresse { font-size: 15px; line-height: 1.6; margin: 0; overflow-wrap: anywhere; }
+  .sv-adresse span { color: ${C.inkSoft}; font-size: 14px; }
 
   .sv-actions { display: flex; flex-direction: column; gap: 10px; }
-  .sv-btn, .sv-btn-secondaire, .sv-btn-whatsapp, .sv-btn-annuler {
-    display: flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 16px;
-    border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer;
+  .sv-btn, .sv-btn-secondaire, .sv-btn-annuler {
+    display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 48px; padding: 0 16px;
+    border-radius: 8px; font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer;
   }
-  .sv-btn { background: ${C.gold}; color: ${C.inkDeep}; border: none; display: inline-flex; }
-  .sv-btn-secondaire { background: #fff; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; }
-  .sv-btn-whatsapp { background: #1F9D55; color: #fff; border: none; }
-  .sv-btn-annuler { background: #fff; border: 1.5px solid #F0D9D5; color: ${C.clay}; }
+  .sv-btn { background: ${C.ink}; color: ${C.white}; border: none; display: inline-flex; }
+  .sv-btn:hover { background: ${C.inkDeep}; }
+  .sv-btn:disabled { opacity: 0.6; cursor: wait; }
+  .sv-btn-secondaire { background: ${C.white}; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; }
+  .sv-btn-secondaire:hover { border-color: ${C.inkSoft}; }
+  .sv-btn-annuler { background: ${C.white}; border: 1.5px solid #e9c9c4; color: ${C.clay}; }
+  .sv-btn-annuler:hover { background: #fbf0ee; }
   .sv-btn-annuler:disabled { opacity: 0.6; cursor: wait; }
-  .sv-aide { font-size: 12.5px; color: ${C.inkSoft}; text-align: center; margin: 10px 0 0; }
-
-  a:focus-visible, button:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
+  .sv-aide { font-size: 14px; color: ${C.inkSoft}; text-align: center; margin: 12px 0 0; }
 
   @media (min-width: 820px) {
     .sv-page { padding: 24px 20px; }

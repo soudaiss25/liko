@@ -78,3 +78,37 @@ body {
 .ui-badge-or { background: #fbf0d9; color: #8a5a0b; }
 .ui-badge-vert { background: #e6f3ec; color: #2c6e4d; }
 .ui-badge-rouge { background: #fbeceb; color: #a8453a; }
+
+/* Champs de formulaire */
+.ui-champ { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; min-width: 0; }
+.ui-label { font-size: 15px; font-weight: 700; color: #143a4b; }
+.ui-optionnel { font-weight: 500; color: #6e8a97; }
+.ui-aide { font-size: 14px; color: #6e8a97; margin: 0; line-height: 1.45; }
+.ui-erreur-champ { font-size: 14px; color: #c2574a; font-weight: 700; margin: 0; }
+/* 16 px minimum : sinon certains navigateurs zooment tout seuls sur le champ */
+.ui-input {
+  width: 100%; min-height: 48px; padding: 0 16px; border-radius: 8px;
+  border: 1.5px solid #e4ded2; background: #f4f1ea; color: #143a4b;
+  font-size: 16px; font-family: inherit;
+}
+.ui-input:focus { border-color: #1d4e63; background: #fff; outline: none; }
+.ui-input[aria-invalid="true"] { border-color: #c2574a; background: #fbf0ee; }
+textarea.ui-input { padding: 12px 16px; line-height: 1.45; resize: vertical; }
+
+/* Messages */
+.ui-msg { font-size: 15px; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.45; }
+.ui-msg-err { background: #fbf0ee; color: #a8453a; border: 1px solid #efd4cf; }
+.ui-msg-ok { background: #e6f3ec; color: #2c6e4d; border: 1px solid #cde5d8; }
+.ui-msg-info { background: #fff; color: #143a4b; border: 1px solid #e4ded2; }
+
+/* Page d'authentification */
+.ui-auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 48px; }
+.ui-auth-marque { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; min-height: 44px; }
+.ui-auth-marque img { width: 48px; height: 48px; object-fit: contain; }
+.ui-auth-marque span { font-size: 24px; font-weight: 800; color: #1d4e63; }
+.ui-auth-carte { width: 100%; max-width: 440px; background: #fff; border: 1px solid #e4ded2; border-radius: 12px; padding: 24px 16px; }
+.ui-auth-titre { font-size: 24px; font-weight: 800; color: #143a4b; margin: 0 0 8px; }
+.ui-auth-sous { font-size: 15px; color: #6e8a97; margin: 0 0 24px; line-height: 1.45; }
+.ui-auth-liens { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; font-size: 15px; color: #6e8a97; text-align: center; }
+.ui-auth-liens a { color: #1d4e63; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
+@media (min-width: 480px) { .ui-auth-carte { padding: 32px 24px; } }
