@@ -226,7 +226,7 @@ export default function Register() {
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jeton}` },
-      body: JSON.stringify({ prenom, nom, username, adresse }),
+      body: JSON.stringify({ prenom, nom, username, email, adresse }),
     })
 
     const result = await res.json().catch(() => ({}))

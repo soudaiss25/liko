@@ -1,15 +1,5 @@
-# Intégration continue + déploiement Vercel.
-#
-# - Chaque push / pull request : tests (vitest) puis build Next.js.
-# - Pull request                : déploiement "preview" sur Vercel (si les tests passent).
-# - Push sur main               : déploiement en PRODUCTION sur Vercel (si les tests passent).
-#
-# Secrets à créer dans GitHub (Settings → Secrets and variables → Actions) :
-#   VERCEL_TOKEN        jeton créé sur vercel.com/account/tokens
-#   VERCEL_ORG_ID       "orgId"     dans .vercel/project.json (après `npx vercel link`)
-#   VERCEL_PROJECT_ID   "projectId" dans .vercel/project.json
-# Les variables du site (clés Supabase) se règlent dans le projet Vercel,
-# jamais dans ce fichier.
+# Intégration continue : VÉRIFIE seulement (tests + build + lint).
+# Le déploiement est géré par l'intégration GitHub de Vercel.
 
 name: CI
 
@@ -26,8 +16,8 @@ permissions:
   contents: read
 
 jobs:
-  tests:
-    name: Tests et build
+  verifier:
+    name: Tests, build et lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,37 +39,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://exemple.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: cle-factice-pour-le-build
 
-  deploiement:
-    name: Déploiement Vercel
-    needs: tests
-    runs-on: ubuntu-latest
-    # Pas de déploiement pour les PR venant d'un fork (pas d'accès aux secrets)
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      # Production uniquement sur main
-      CIBLE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'production' || 'preview' }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm i -g vercel
-
-      - name: Récupérer la config du projet Vercel
-        run: vercel pull --yes --environment=$CIBLE --token=$VERCEL_TOKEN
-
-      - name: Construire
-        run: |
-          if [ "$CIBLE" = "production" ]; then vercel build --prod --token=$VERCEL_TOKEN
-          else vercel build --token=$VERCEL_TOKEN; fi
-
-      - name: Déployer
-        run: |
-          if [ "$CIBLE" = "production" ]; then vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
-          else vercel deploy --prebuilt --token=$VERCEL_TOKEN; fi
+      # Non bloquant pour l'instant : le lint n'a pas encore été nettoyé
+      - name: Lint
+        run: npx eslint .
+        continue-on-error: true

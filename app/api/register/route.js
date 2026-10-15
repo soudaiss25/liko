@@ -9,12 +9,14 @@
    vient du JETON, jamais du corps de la requête. Le rôle est toujours
    'client' à la création, et n'est jamais modifié ici.
 
-   Corps accepté : prenom, nom, username, adresse (rien d'autre n'est lu).
+   Corps accepté : prenom, nom, username, email (facultatif), adresse
+   (rien d'autre n'est lu).
 */
 
 import { createClient } from '@supabase/supabase-js'
 
 const USERNAME_VALIDE = /^[a-z0-9_.]{3,20}$/
+const EMAIL_VALIDE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 const service = () =>
   createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -44,6 +46,11 @@ export async function POST(request) {
     const nom = String(corps.nom || '').trim()
     const adresse = String(corps.adresse || '').trim()
     const username = String(corps.username || '').trim().toLowerCase().replace(/^@/, '')
+    const emailBrut = String(corps.email || '').trim().toLowerCase()
+    const email = emailBrut || null
+    if (email && !EMAIL_VALIDE.test(email)) {
+      return erreur('Adresse e-mail invalide (tu peux la laisser vide).')
+    }
 
     if (prenom.length < 2) return erreur('Indique ton prénom (2 caractères minimum).')
     if (!USERNAME_VALIDE.test(username)) {
@@ -68,7 +75,7 @@ export async function POST(request) {
       .maybeSingle()
     if (erreurExistant) throw erreurExistant
 
-    const champs = { prenom, nom, username, adresse: adresse || null }
+    const champs = { prenom, nom, username, email, adresse: adresse || null }
     const { error: erreurEcriture } = existant
       ? await supabase.from('users').update(champs).eq('id', id)
       : await supabase.from('users').insert({ id, telephone, role: 'client', ...champs })
