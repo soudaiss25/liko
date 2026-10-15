@@ -37,6 +37,28 @@ export default function PageSuivi() {
   const [message, setMessage] = useState(null)
   const [occupe, setOccupe] = useState(false)
   const [copie, setCopie] = useState(false)
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data?.user || null))
+  }, [])
+
+  /* Lie la commande au compte connecté (elle sera alors visible sur tous ses appareils) */
+  const rattacher = async () => {
+    setOccupe(true)
+    const { data, error } = await supabase.rpc('rattacher_commandes', { p_codes: [code] })
+    setOccupe(false)
+    if (error) {
+      setMessage({ type: 'err', texte: messageErreurCommande(error) })
+      return
+    }
+    setMessage(
+      data > 0
+        ? { type: 'ok', texte: 'Commande ajoutée à ton compte.' }
+        : { type: 'err', texte: 'Cette commande est déjà liée à un autre compte.' }
+    )
+    charger()
+  }
 
   const charger = async () => {
     const { data, error } = await supabase.rpc('suivre_commande', { p_code: code })
@@ -139,6 +161,26 @@ export default function PageSuivi() {
         </section>
 
         {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={`sv-message sv-message-${message.type}`}>{message.texte}</p>}
+
+        {!commande.rattachee && (
+          <div className="sv-alerte">
+            {user ? (
+              <>
+                <p style={{ margin: '0 0 10px' }}>
+                  Cette commande a été passée sans compte. Ajoute-la au tien pour la retrouver sur tous tes appareils.
+                </p>
+                <button onClick={rattacher} disabled={occupe} className="sv-btn" style={{ cursor: 'pointer' }}>
+                  Ajouter à mon compte
+                </button>
+              </>
+            ) : (
+              <p style={{ margin: 0 }}>
+                <a href={`/login?suite=/suivi/${code}`} style={{ color: C.goldDeep, fontWeight: 700 }}>Connecte-toi ou crée un compte</a>,
+                puis reviens sur ce lien.
+              </p>
+            )}
+          </div>
+        )}
 
         {lignesIndispo.length > 0 && commande.statut !== 'annulee' && (
           <p className="sv-alerte">
