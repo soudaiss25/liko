@@ -218,18 +218,23 @@ export default function Register() {
 
     if (error) { setErreur(error.message); setLoading(false); return }
 
+    // Sans session, impossible de prouver qui on est au serveur
+    const jeton = data?.session?.access_token
+    if (!jeton) { setErreur('Inscription impossible, réessaie'); setLoading(false); return }
+
+    // Le serveur déduit l'id et le téléphone du jeton : on n'envoie que le profil
     const res = await fetch('/api/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: data.user.id,
-        telephone: numeroComplet,
-        nom, prenom, username, email, adresse, password,
-      }),
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jeton}` },
+      body: JSON.stringify({ prenom, nom, username, adresse }),
     })
 
-    const result = await res.json()
-    if (result.error) { setErreur(result.error); setLoading(false); return }
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok || result.error) {
+      setErreur(result.error || 'Inscription impossible, réessaie')
+      setLoading(false)
+      return
+    }
 
     window.location.href = '/'
   }
