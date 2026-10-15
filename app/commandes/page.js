@@ -186,9 +186,8 @@ const css = `
   .mc-rattacher button:disabled { opacity: 0.6; cursor: wait; }
   .mc-msg-ok { color: ${C.leaf}; font-weight: 600; }
   .mc-msg-err { color: ${C.clay}; font-weight: 600; }
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
-  .mc-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding-bottom: 72px; }
+  .mc-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: var(--font-jakarta), system-ui, sans-serif; padding-bottom: 72px; }
   .mc-page { max-width: 820px; margin: 0 auto; padding: 18px 16px 30px; }
   .mc-titre { font-size: 24px; font-weight: 800; margin: 4px 0 16px; letter-spacing: -0.3px; }
   .mc-etat { color: ${C.inkSoft}; text-align: center; padding: 50px 0; }

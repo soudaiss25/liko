@@ -12,7 +12,7 @@ const s = {
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
     padding: '24px 18px 40px',
-    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+    fontFamily: "var(--font-jakarta), system-ui, -apple-system, sans-serif",
   },
   logoWrap: {
     display: 'flex', flexDirection: 'column',

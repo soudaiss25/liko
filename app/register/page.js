@@ -35,7 +35,7 @@ const s = {
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'flex-start',
     padding: '20px 18px 40px',
-    fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif",
+    fontFamily: "var(--font-jakarta), system-ui, -apple-system, sans-serif",
   },
   logoWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '6px' },
   tagline: { fontSize: '14px', color: C.inkSoft, fontWeight: 500, marginTop: '-6px' },

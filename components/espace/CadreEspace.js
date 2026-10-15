@@ -83,12 +83,11 @@ export default function CadreEspace({ rolesAutorises, titre, children }) {
 
 /* ─────────── CSS de base, partagé par tous les espaces collaborateurs ─────────── */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
 
   .app {
     background: ${C.bgGrey}; min-height: 100vh;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: ${C.inkDeep};
+    font-family: var(--font-jakarta), system-ui, sans-serif; color: ${C.inkDeep};
   }
   .state { text-align: center; padding: 90px 20px; color: ${C.inkSoft}; font-size: 15px; }
   .visually-hidden {

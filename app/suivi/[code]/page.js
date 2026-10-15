@@ -256,9 +256,8 @@ export default function PageSuivi() {
 }
 
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
-  .sv-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding-bottom: 72px; }
+  .sv-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: var(--font-jakarta), system-ui, sans-serif; padding-bottom: 72px; }
 
   .sv-page { max-width: 980px; margin: 0 auto; padding: 16px; }
   .sv-retour { display: inline-block; font-size: 14px; font-weight: 700; color: ${C.ink}; text-decoration: none; padding: 6px 0 12px; }

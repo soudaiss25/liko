@@ -431,12 +431,11 @@ function Champ({ id, label, optionnel, aide, erreur, children }) {
 
 /* ─────────── CSS ─────────── */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
 
   .cm-app {
     background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep};
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: var(--font-jakarta), system-ui, sans-serif;
     padding-bottom: 110px; /* place pour le bouton collant sur téléphone */
   }
 
