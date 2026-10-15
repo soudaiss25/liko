@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase-browser'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
 import ProductCard from '@/components/ProductCard'
+import { normaliserTexte } from '@/lib/produit'
 
 /* ─────────── Palette (du logo) ─────────── */
 const C = {
@@ -34,7 +35,8 @@ export default function Catalogue() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       if (user) {
-        const { data } = await supabase.from('users').select('prenom').eq('id', user.id).single()
+        // Le rôle sert à afficher le raccourci "Admin" dans la barre du bas
+        const { data } = await supabase.from('users').select('prenom, role').eq('id', user.id).single()
         setProfil(data)
       }
     }
@@ -53,14 +55,33 @@ export default function Catalogue() {
     chargerProduits()
   }, [])
 
+  /* Recherche sans accents ni majuscules : "boubou brode" trouve "Boubou brodé" */
+  const q = normaliserTexte(recherche)
   const produitsFiltres = produits.filter((p) => {
     const matchCat = categorie === 'Tout' || p.categorie === categorie
-    const matchRecherche = p.nom?.toLowerCase().includes(recherche.toLowerCase())
+    const matchRecherche = !q || normaliserTexte(`${p.nom} ${p.description || ''}`).includes(q)
     return matchCat && matchRecherche
   })
 
   const toggleFavori = (id) =>
     setFavoris((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
+
+  /* Le bouton "Découvrir" du bandeau descend jusqu'aux produits */
+  const allerAuxProduits = () =>
+    document.getElementById('produits')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+
+  /* Barre du bas : uniquement des pages qui existent.
+     - "Commandes" est ouvert à tous : un client sans compte y retrouve
+       les commandes passées depuis son téléphone
+     - un admin a un raccourci vers son espace (en passant par un lien du site,
+       on ne lui redemande pas de se connecter) */
+  const navigation = [
+    { icon: '🏠', label: 'Accueil', href: '/', active: true },
+    { icon: '🛒', label: 'Panier', href: '/panier' },
+    { icon: '📦', label: 'Commandes', href: '/commandes' },
+    ...(!user ? [{ icon: '👤', label: 'Connexion', href: '/login' }] : []),
+    ...(profil?.role === 'admin' ? [{ icon: '⚙️', label: 'Admin', href: '/admin' }] : []),
+  ]
 
   return (
     <div className="app">
@@ -90,7 +111,7 @@ export default function Catalogue() {
               <div className="promo-kicker">ARRIVAGE DE CHINE</div>
               <div className="promo-title">Prix direct usine</div>
               <div className="promo-sub">Livraison 15–30 jours · Payez à la réception</div>
-              <button className="promo-cta">Découvrir →</button>
+              <button className="promo-cta" onClick={allerAuxProduits}>Découvrir →</button>
             </div>
             <div className="promo-emoji">📦</div>
           </div>
@@ -113,18 +134,18 @@ export default function Catalogue() {
           </div>
         </div>
 
-        {/* Bandeau invité */}
+        {/* Bandeau invité : on rassure (pas de compte obligatoire) au lieu de pousser à se connecter */}
         {!user && (
           <div className="guest-banner">
-            <span>💡 Connecte-toi pour sauvegarder ton panier</span>
-            <a href="/login" className="guest-banner-link">Se connecter</a>
+            <span>💡 Pas besoin de compte pour commander : tu paies à la livraison.</span>
+            <a href="/login" className="guest-banner-link">J'ai un compte</a>
           </div>
         )}
 
         {/* ════════ EN-TÊTE SECTION ════════ */}
-        <div className="section-head">
+        <div className="section-head" id="produits">
           <h2 className="section-title">
-            {categorie === 'Tout' ? 'Tous les produits' : categorie}
+            {recherche ? `Résultats pour « ${recherche} »` : categorie === 'Tout' ? 'Tous les produits' : categorie}
           </h2>
           <span className="section-count">
             {produitsFiltres.length} produit{produitsFiltres.length > 1 ? 's' : ''}
@@ -132,7 +153,7 @@ export default function Catalogue() {
         </div>
 
         {/* ════════ GRILLE PRODUITS ════════
-            Chaque carte est maintenant le composant partagé <ProductCard />.
+            Chaque carte est le composant partagé <ProductCard />.
             La page s'occupe seulement de la GRILLE (combien de colonnes). */}
         {chargement ? (
           <div className="state">Chargement des produits…</div>
@@ -140,6 +161,11 @@ export default function Catalogue() {
           <div className="state">
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
             <div>Aucun produit trouvé</div>
+            {(recherche || categorie !== 'Tout') && (
+              <button className="reset" onClick={() => { setRecherche(''); setCategorie('Tout') }}>
+                Voir tous les produits
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid">
@@ -173,14 +199,9 @@ export default function Catalogue() {
 
       {/* ════════ BOTTOM NAV (mobile) ════════ */}
       <nav className="bottom-nav" aria-label="Navigation principale">
-        {[
-          { icon: '🏠', label: 'Accueil', href: '/', active: true },
-          { icon: '🔍', label: 'Explorer', href: '/explorer' },
-          { icon: '🛒', label: 'Panier', href: '/panier' },
-          { icon: '📦', label: 'Commandes', href: user ? '/commandes' : '/login' },
-          { icon: '👤', label: user ? 'Profil' : 'Connexion', href: user ? '/profil' : '/login' },
-        ].map((item) => (
-          <a key={item.label} href={item.href} className={`nav-item ${item.active ? 'nav-on' : ''}`}>
+        {navigation.map((item) => (
+          <a key={item.label} href={item.href} className={`nav-item ${item.active ? 'nav-on' : ''}`}
+            aria-current={item.active ? 'page' : undefined}>
             <span className="nav-icon" aria-hidden="true">{item.icon}</span>
             <span className="nav-label">{item.label}</span>
           </a>
@@ -191,7 +212,7 @@ export default function Catalogue() {
 }
 
 /* ─────────── CSS ───────────
-   Le style des cartes est maintenant dans components/ProductCard.js */
+   Le style des cartes est dans components/ProductCard.js */
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
@@ -234,6 +255,7 @@ const css = `
     background: ${C.gold}; color: ${C.inkDeep}; border: none; cursor: pointer;
     padding: 11px 22px; border-radius: 8px; font-weight: 700; font-size: 14px; font-family: inherit;
   }
+  .promo-cta:hover { background: ${C.goldDeep}; }
   .promo-emoji { font-size: 62px; }
   .promo-side { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   .promo-small {
@@ -253,14 +275,18 @@ const css = `
   .guest-banner-link { color: ${C.goldDeep}; font-weight: 700; text-decoration: none; white-space: nowrap; }
 
   /* ════ SECTION ════ */
-  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 16px; scroll-margin-top: 60px; }
   .section-title { font-size: 20px; font-weight: 800; color: ${C.inkDeep}; margin: 0; }
-  .section-count { font-size: 13px; color: ${C.inkSoft}; }
+  .section-count { font-size: 13px; color: ${C.inkSoft}; white-space: nowrap; }
 
   /* ════ GRILLE (les cartes viennent de ProductCard) ════ */
   .grid { display: grid; gap: 14px; grid-template-columns: repeat(2, 1fr); }
 
   .state { text-align: center; padding: 70px 20px; color: ${C.inkSoft}; font-size: 15px; }
+  .reset {
+    margin-top: 16px; background: ${C.gold}; color: ${C.inkDeep}; border: none; cursor: pointer;
+    padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; font-family: inherit;
+  }
 
   /* ════ TRUST ════ */
   .trust { background: #fff; border-top: 1px solid ${C.line}; border-bottom: 1px solid ${C.line}; margin-top: 20px; }
@@ -278,7 +304,7 @@ const css = `
     position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
     border-top: 1px solid ${C.line}; display: flex; padding: 9px 0 14px; z-index: 40;
   }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; min-height: 44px; justify-content: center; }
   .nav-icon { font-size: 19px; opacity: 0.4; }
   .nav-label { font-size: 10px; font-weight: 600; color: #A9B4B9; }
   .nav-on .nav-icon { opacity: 1; }

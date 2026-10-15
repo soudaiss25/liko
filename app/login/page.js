@@ -117,6 +117,14 @@ function lireSuite() {
   return interne && !suite.startsWith('/login') ? suite : null
 }
 
+/* Où arrive chacun après la connexion, selon son rôle.
+   Les clients (et tout rôle non listé) arrivent sur l'accueil. */
+const ESPACE_PAR_ROLE = {
+  admin: '/admin',
+  collab_etranger: '/espace/etranger',
+  collab_comores: '/espace/comores',
+}
+
 export default function Login() {
   const [identifiant, setIdentifiant] = useState('')
   const [password, setPassword] = useState('')
@@ -134,7 +142,8 @@ export default function Login() {
      2. Le serveur vérifie et renvoie des jetons de session
      3. On donne ces jetons au client Supabase du navigateur → on est connecté
      4. On redirige : vers la page demandée (?suite=…) s'il y en a une,
-        sinon selon le rôle (collaborateurs → leur espace, les autres → accueil)
+        sinon selon le rôle (admin → /admin, collaborateurs → leur espace,
+        clients → accueil)
   */
   const connecter = async () => {
     setLoading(true)
@@ -168,10 +177,6 @@ export default function Login() {
       // Chacun arrive directement dans SON espace selon son rôle
       const { data: { user } } = await supabase.auth.getUser()
       const { data: profil } = await supabase.from('users').select('role').eq('id', user.id).single()
-      const ESPACE_PAR_ROLE = {
-        collab_etranger: '/espace/etranger',
-        collab_comores: '/espace/comores',
-      }
       window.location.href = lireSuite() || ESPACE_PAR_ROLE[profil?.role] || '/'
     } catch (e) {
       setErreur('Pas de connexion internet ? Réessaie dans un instant.')
