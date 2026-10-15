@@ -2,8 +2,9 @@
 
 /* ─────────── app/commandes/page.js ───────────
    "Mes commandes" :
-   - connecté  → toutes ses commandes (y compris celles passées sans compte
-                 avec le même téléphone)
+   - connecté  → les commandes liées à son compte + celles suivies depuis cet
+                 appareil (sauf celles liées à un autre compte). Celles sans
+                 compte peuvent être ajoutées au sien d'un clic.
    - sans compte → les commandes suivies depuis CET appareil
    Les deux listes sont fusionnées, sans doublon.
 */
@@ -15,7 +16,9 @@ import Footer from '@/components/Footer'
 import BarreNavMobile from '@/components/BarreNavMobile'
 import ProduitImage from '@/components/ProduitImage'
 import { formatKMF } from '@/lib/produit'
-import { STATUTS_COMMANDE, referenceCommande, formatDate, suivisMemorises } from '@/lib/commandes'
+import {
+  STATUTS_COMMANDE, referenceCommande, formatDate, suivisMemorises, messageErreurCommande,
+} from '@/lib/commandes'
 
 const C = {
   ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
@@ -30,38 +33,58 @@ export default function PageMesCommandes() {
   const [commandes, setCommandes] = useState([])
   const [connecte, setConnecte] = useState(false)
   const [chargement, setChargement] = useState(true)
+  const [occupe, setOccupe] = useState(false)
+  const [message, setMessage] = useState(null)
 
-  useEffect(() => {
-    const charger = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setConnecte(!!user)
+  const charger = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    setConnecte(!!user)
 
-      // 1. Commandes du compte
-      let duCompte = []
-      if (user) {
-        const { data } = await supabase.rpc('mes_commandes')
-        duCompte = data || []
-      }
-
-      // 2. Commandes suivies depuis cet appareil (on ne recharge que celles qu'on n'a pas déjà)
-      const connus = new Set(duCompte.map((c) => c.code_suivi))
-      const codes = suivisMemorises().filter((c) => !connus.has(c))
-      const reponses = await Promise.all(codes.map((code) => supabase.rpc('suivre_commande', { p_code: code })))
-      const deLAppareil = reponses
-        .map((r, i) => (r.data ? {
-          numero: r.data.numero, statut: r.data.statut, created_at: r.data.created_at,
-          montant_total: r.data.montant_total, code_suivi: codes[i],
-          apercu: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').slice(0, 3),
-          nb_articles: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').reduce((s, l) => s + l.quantite, 0),
-        } : null))
-        .filter(Boolean)
-
-      const toutes = [...duCompte, ...deLAppareil].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-      setCommandes(toutes)
-      setChargement(false)
+    // 1. Commandes du compte (uniquement celles liées à CE compte)
+    let duCompte = []
+    if (user) {
+      const { data } = await supabase.rpc('mes_commandes')
+      duCompte = data || []
     }
+
+    // 2. Commandes suivies depuis cet appareil (on ne recharge que celles qu'on n'a pas déjà)
+    const connus = new Set(duCompte.map((c) => c.code_suivi))
+    const codes = suivisMemorises().filter((c) => !connus.has(c))
+    const reponses = await Promise.all(codes.map((code) => supabase.rpc('suivre_commande', { p_code: code })))
+    const deLAppareil = reponses
+      .map((r, i) => (r.data ? {
+        numero: r.data.numero, statut: r.data.statut, created_at: r.data.created_at,
+        montant_total: r.data.montant_total, code_suivi: codes[i],
+        rattachee: r.data.rattachee, a_moi: r.data.a_moi,
+        apercu: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').slice(0, 3),
+        nb_articles: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').reduce((s, l) => s + l.quantite, 0),
+      } : null))
+      .filter(Boolean)
+      // Connecté : on masque celles qui appartiennent à un autre compte
+      .filter((c) => !(user && c.rattachee && !c.a_moi))
+
+    const toutes = [...duCompte, ...deLAppareil].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    setCommandes(toutes)
+    setChargement(false)
+  }
+
+  useEffect(() => { charger() }, [])
+
+  /* Commandes de cet appareil pas encore liées à un compte */
+  const sansCompte = commandes.filter((c) => c.rattachee === false)
+
+  const rattacherTout = async () => {
+    const codes = sansCompte.map((c) => c.code_suivi)
+    setOccupe(true)
+    const { data, error } = await supabase.rpc('rattacher_commandes', { p_codes: codes })
+    setOccupe(false)
+    if (error) {
+      setMessage({ type: 'err', texte: messageErreurCommande(error) })
+      return
+    }
+    setMessage({ type: 'ok', texte: `${data} commande${data > 1 ? 's' : ''} ajoutée${data > 1 ? 's' : ''} à ton compte` })
     charger()
-  }, [])
+  }
 
   const enCours = commandes.filter((c) => EN_COURS.includes(c.statut))
   const terminees = commandes.filter((c) => !EN_COURS.includes(c.statut))
@@ -100,6 +123,18 @@ export default function PageMesCommandes() {
                 Ces commandes ont été suivies depuis cet appareil.{' '}
                 <a href="/login?suite=/commandes">Connecte-toi</a> pour les retrouver sur tous tes appareils.
               </p>
+            )}
+            {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={`mc-info mc-msg-${message.type}`}>{message.texte}</p>}
+            {connecte && sansCompte.length > 0 && (
+              <div className="mc-rattacher">
+                <p>
+                  {sansCompte.length} commande{sansCompte.length > 1 ? 's' : ''} passée{sansCompte.length > 1 ? 's' : ''} sans compte sur cet appareil.
+                  Ajoute-{sansCompte.length > 1 ? 'les' : 'la'} à ton compte pour {sansCompte.length > 1 ? 'les' : 'la'} retrouver partout.
+                </p>
+                <button onClick={rattacherTout} disabled={occupe} className="mc-btn" style={{ border: 'none', cursor: 'pointer' }}>
+                  Ajouter à mon compte
+                </button>
+              </div>
             )}
             <Section titre="En cours" liste={enCours} />
             <Section titre="Terminées" liste={terminees} />
@@ -151,6 +186,11 @@ function Section({ titre, liste }) {
 }
 
 const css = `
+  .mc-rattacher { background: #FFF6E4; border: 1px solid #F1DDAE; color: #7A5C1E; border-radius: 12px; padding: 14px; margin: 0 0 16px; font-size: 14px; line-height: 1.5; }
+  .mc-rattacher p { margin: 0 0 10px; }
+  .mc-rattacher button:disabled { opacity: 0.6; cursor: wait; }
+  .mc-msg-ok { color: ${C.leaf}; font-weight: 600; }
+  .mc-msg-err { color: ${C.clay}; font-weight: 600; }
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
   .mc-app { background: ${C.bgGrey}; min-height: 100vh; color: ${C.inkDeep}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; padding-bottom: 72px; }

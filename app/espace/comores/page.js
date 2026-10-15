@@ -4,10 +4,11 @@
    Espace du collaborateur aux Comores.
 
    Ce qu'il fait ici :
-   1. voir les arrivages (envois en route), les plus urgents en premier
-   2. RÉCEPTIONNER un envoi : compter ce qui est vraiment arrivé,
+   1. suivre les COMMANDES des clients (relancer l'achat, livrer, encaisser, annuler)
+   2. voir les colis en route, les plus urgents en premier
+   3. RÉCEPTIONNER un envoi : compter ce qui est vraiment arrivé,
       justifier chaque écart → le stock local se met à jour
-   3. consulter le stock disponible aux Comores
+   4. consulter le stock disponible aux Comores
 
    Il ne voit jamais les prix d'achat : la base ne les lui envoie pas.
 */
@@ -17,12 +18,14 @@ import { createClient } from '@/lib/supabase-browser'
 import CadreEspace from '@/components/espace/CadreEspace'
 import CarteEnvoi from '@/components/espace/CarteEnvoi'
 import DetailEnvoi from '@/components/espace/DetailEnvoi'
+import { CommandesListe, DetailCommande } from '@/components/espace/CommandesComores'
 import ProduitImage from '@/components/ProduitImage'
 import {
   MOTIFS_ECART, referenceEnvoi, formatDateCourte, estEnRetard, totalPieces,
   dateLocale, messageErreur, erreurNecessiteRechargement,
 } from '@/lib/envois'
 import { flagPour, normaliserTexte } from '@/lib/produit'
+import { referenceCommande, messageErreurCommande } from '@/lib/commandes'
 
 const C = {
   ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
@@ -33,7 +36,7 @@ const C = {
 
 export default function PageComores() {
   return (
-    <CadreEspace rolesAutorises={['collab_comores']} titre="Réception Comores">
+    <CadreEspace rolesAutorises={['collab_comores']} titre="Espace Comores">
       <EspaceComores />
     </CadreEspace>
   )
@@ -43,23 +46,28 @@ export default function PageComores() {
 function EspaceComores() {
   const supabase = createClient()
 
+  const [commandes, setCommandes] = useState([])
   const [envois, setEnvois] = useState([])
   const [stock, setStock] = useState([])
   const [chargement, setChargement] = useState(true)
   const [message, setMessage] = useState(null) // { type: 'ok' | 'err', texte }
-  const [onglet, setOnglet] = useState('arrivages') // arrivages | recus | stock
-  const [vue, setVue] = useState({ type: 'liste' }) // liste | reception | detail
+  const [onglet, setOnglet] = useState('commandes') // commandes | arrivages | recus | stock
+  const [vue, setVue] = useState({ type: 'liste' }) // liste | reception | detail | commande
   const [rechercheStock, setRechercheStock] = useState('')
 
   const charger = async () => {
     setChargement(true)
-    const [resEnvois, resStock] = await Promise.all([
+    const [resEnvois, resStock, resCommandes] = await Promise.all([
       supabase.rpc('envois_comores'),
       supabase.rpc('stock_comores_liste'),
+      supabase.rpc('commandes_comores'),
     ])
-    if (resEnvois.error || resStock.error) {
+    if (resCommandes.error) {
+      setMessage({ type: 'err', texte: messageErreurCommande(resCommandes.error) })
+    } else if (resEnvois.error || resStock.error) {
       setMessage({ type: 'err', texte: messageErreur(resEnvois.error || resStock.error) })
     }
+    setCommandes(resCommandes.data || [])
     setEnvois(resEnvois.data || [])
     setStock(resStock.data || [])
     setChargement(false)
@@ -74,6 +82,25 @@ function EspaceComores() {
     charger()
   }
 
+  if (vue.type === 'commande') {
+    const commande = commandes.find((c) => c.id === vue.id)
+    if (!commande) {
+      return (
+        <section>
+          <p role="alert" className="err">Cette commande n&apos;est plus dans la liste. Actualise la page.</p>
+          <button onClick={() => fermer()} className="btn-primary">← Retour aux commandes</button>
+        </section>
+      )
+    }
+    return (
+      <DetailCommande
+        commande={commande}
+        onRetour={() => setVue({ type: 'liste' })}
+        onTermine={(texte) => fermer({ texte })}
+        onErreurRecharger={charger}
+      />
+    )
+  }
   if (vue.type === 'reception') return <Reception envoi={vue.envoi} onFermer={fermer} />
   if (vue.type === 'detail') {
     return <DetailEnvoi envoi={vue.envoi} lignes={vue.envoi.lignes} onRetour={() => setVue({ type: 'liste' })} />
@@ -100,17 +127,19 @@ function EspaceComores() {
     <section>
       <div className="page-head">
         <div>
-          <h1 className="page-title">Arrivages & stock</h1>
-          <p className="page-sub">Réceptionne les colis et garde le stock à jour</p>
+          <h1 className="page-title">Commandes & stock</h1>
+          <p className="page-sub">Suis les commandes, réceptionne les colis, garde le stock à jour</p>
         </div>
         <button onClick={() => { setMessage(null); charger() }} className="btn-secondary">↻ Actualiser</button>
       </div>
 
       {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={message.type}>{message.texte}</p>}
 
+      <style href="onglets-comores" precedence="default">{`.segment { overflow-x: auto; }`}</style>
       <div className="segment" role="group" aria-label="Sections">
         {[
-          { id: 'arrivages', label: 'À recevoir', nb: arrivages.length },
+          { id: 'commandes', label: 'Commandes', nb: commandes.filter((c) => ['arrivee', 'echec_livraison', 'en_livraison'].includes(c.statut)).length },
+          { id: 'arrivages', label: 'Colis', nb: arrivages.length },
           { id: 'recus', label: 'Reçus', nb: recus.length },
           { id: 'stock', label: 'Stock', nb: stock.length },
         ].map((o) => (
@@ -123,6 +152,8 @@ function EspaceComores() {
 
       {chargement ? (
         <div className="state">Chargement…</div>
+      ) : onglet === 'commandes' ? (
+        <CommandesListe commandes={commandes} onOuvrir={(id) => { setMessage(null); setVue({ type: 'commande', id }) }} />
       ) : onglet === 'arrivages' ? (
         arrivages.length === 0 ? (
           <div className="vide"><div className="vide-emoji">🚚</div>Aucun colis en route pour le moment.</div>
@@ -344,6 +375,10 @@ function Reception({ envoi, onFermer }) {
               </label>
             </div>
 
+            {ligne.commande_numero && (
+              <p className="rc-pour">📦 Pour {referenceCommande(ligne.commande_numero)} : à mettre de côté pour ce client</p>
+            )}
+
             {/* La raison n'apparaît que s'il y a un écart */}
             {ecart && (
               <div className="rc-motif">
@@ -422,6 +457,7 @@ const cssReception = `
   }
   .rc-recu input:focus { border-color: ${C.ink}; background: #fff; }
 
+  .rc-pour { font-size: 12.5px; font-weight: 700; color: ${C.goldDeep}; background: #FFF6E4; border-radius: 8px; padding: 8px 10px; margin: 10px 0 0; }
   .rc-motif { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
   .rc-erreur-ligne { font-size: 12.5px; color: ${C.clay}; font-weight: 700; margin: 8px 0 0; }
 

@@ -4,9 +4,11 @@
    Espace du collaborateur à l'étranger (Chine, Sénégal, Niger…).
 
    Ce qu'il fait ici :
-   1. préparer un envoi (brouillon) : pays, transporteur, produits × quantités, prix d'achat
-   2. le marquer comme "parti" → il devient verrouillé et visible aux Comores
-   3. suivre ses envois : en route, puis reçus (avec les écarts signalés)
+   1. voir ce qu'il y a À ACHETER (commandes confirmées, regroupées par produit)
+   2. préparer un envoi (brouillon) avec ces lignes : transporteur, prix d'achat
+      (les quantités des lignes de commande sont fixées par la commande)
+   3. le marquer comme "parti" → il devient verrouillé et visible aux Comores
+   4. suivre ses envois : en route, puis reçus (avec les écarts signalés)
 
    Il ne crée PAS de produits : il choisit dans le catalogue de l'admin.
    Toutes les écritures passent par les fonctions SQL (règles vérifiées dans la base).
@@ -17,11 +19,13 @@ import { createClient } from '@/lib/supabase-browser'
 import CadreEspace from '@/components/espace/CadreEspace'
 import CarteEnvoi from '@/components/espace/CarteEnvoi'
 import DetailEnvoi from '@/components/espace/DetailEnvoi'
+import AAcheter from '@/components/espace/AAcheter'
 import ProduitImage from '@/components/ProduitImage'
 import {
   PAYS_ENVOI, TRANSPORTEURS_SUGGERES, referenceEnvoi, totalPieces,
-  messageErreur, erreurNecessiteRechargement,
+  messageErreur, erreurNecessiteRechargement, formatDateCourte,
 } from '@/lib/envois'
+import { referenceCommande } from '@/lib/commandes'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 
 const C = {
@@ -45,22 +49,24 @@ function EspaceEtranger() {
 
   const [envois, setEnvois] = useState([])
   const [produits, setProduits] = useState([])
+  const [lignesAchat, setLignesAchat] = useState([]) // lignes de commande à acheter
   const [chargement, setChargement] = useState(true)
   const [message, setMessage] = useState(null) // { type: 'ok' | 'err', texte }
-  const [onglet, setOnglet] = useState('brouillon')
+  const [onglet, setOnglet] = useState('acheter') // acheter | brouillon | en_route | recus
   const [vue, setVue] = useState({ type: 'liste' }) // liste | edition | detail
 
   const charger = async () => {
     setChargement(true)
-    const [resEnvois, resProduits] = await Promise.all([
-      supabase.from('envois').select('*, envoi_items(*)').order('created_at', { ascending: false }),
+    const [resEnvois, resProduits, resAchats] = await Promise.all([
+      supabase.rpc('envois_etranger'),
       supabase.from('produits').select('id, nom, categorie, images, actif, prix_achat').order('nom'),
+      supabase.rpc('lignes_a_acheter'),
     ])
-    if (resEnvois.error || resProduits.error) {
-      setMessage({ type: 'err', texte: messageErreur(resEnvois.error || resProduits.error) })
-    }
+    const erreurChargement = resEnvois.error || resProduits.error || resAchats.error
+    if (erreurChargement) setMessage({ type: 'err', texte: messageErreur(erreurChargement) })
     setEnvois(resEnvois.data || [])
     setProduits(resProduits.data || [])
+    setLignesAchat(resAchats.data || [])
     setChargement(false)
   }
 
@@ -86,7 +92,15 @@ function EspaceEtranger() {
     }))
 
   if (vue.type === 'edition') {
-    return <EditeurEnvoi envoi={vue.envoi} produits={produits} onFermer={fermerEditeur} />
+    return (
+      <EditeurEnvoi
+        envoi={vue.envoi}
+        ajouts={vue.ajouts || []}
+        produits={produits}
+        onFermer={fermerEditeur}
+        onRecharger={charger}
+      />
+    )
   }
   if (vue.type === 'detail') {
     return (
@@ -99,12 +113,14 @@ function EspaceEtranger() {
     )
   }
 
+  const nbAchats = lignesAchat.filter((l) => l.etat !== 'indisponible').length
+  const brouillons = envois.filter((e) => e.statut === 'brouillon')
   const groupes = {
     brouillon: envois.filter((e) => e.statut === 'brouillon'),
     en_route: envois.filter((e) => e.statut === 'en_route'),
     recus: envois.filter((e) => e.statut === 'recu' || e.statut === 'recu_avec_ecarts'),
   }
-  const liste = groupes[onglet]
+  const liste = groupes[onglet] || []
 
   return (
     <section>
@@ -113,28 +129,41 @@ function EspaceEtranger() {
           <h1 className="page-title">Mes envois</h1>
           <p className="page-sub">Prépare tes colis et suis leur arrivée aux Comores</p>
         </div>
-        <button onClick={() => { setMessage(null); setVue({ type: 'edition', envoi: null }) }} className="btn-primary">
+        <button onClick={() => { setMessage(null); setVue({ type: 'edition', envoi: null, ajouts: [] }) }} className="btn-primary">
           + Nouvel envoi
         </button>
       </div>
 
       {message && <p role={message.type === 'err' ? 'alert' : 'status'} className={message.type}>{message.texte}</p>}
 
+      <style href="onglets-etranger" precedence="default">{`
+        .segment { overflow-x: auto; }
+        .et-alerte { font-size: 13px; font-weight: 700; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5; border-radius: 10px; padding: 9px 12px; margin: 0 0 6px; }
+      `}</style>
       <div className="segment" role="group" aria-label="Filtrer les envois">
         {[
-          { id: 'brouillon', label: 'Brouillons' },
-          { id: 'en_route', label: 'En route' },
-          { id: 'recus', label: 'Reçus' },
+          { id: 'acheter', label: 'À acheter', nb: nbAchats },
+          { id: 'brouillon', label: 'Brouillons', nb: groupes.brouillon.length },
+          { id: 'en_route', label: 'En route', nb: groupes.en_route.length },
+          { id: 'recus', label: 'Reçus', nb: groupes.recus.length },
         ].map((o) => (
           <button key={o.id} onClick={() => setOnglet(o.id)} aria-pressed={onglet === o.id}
             className={`seg ${onglet === o.id ? 'seg-on' : ''}`}>
-            {o.label}<span className="seg-nb">{groupes[o.id].length}</span>
+            {o.label}<span className="seg-nb">{o.nb}</span>
           </button>
         ))}
       </div>
 
       {chargement ? (
         <div className="state">Chargement…</div>
+      ) : onglet === 'acheter' ? (
+        <AAcheter
+          lignes={lignesAchat}
+          brouillons={brouillons}
+          onPreparer={(lignes, brouillon) => { setMessage(null); setVue({ type: 'edition', envoi: brouillon, ajouts: lignes }) }}
+          onRecharger={charger}
+          onMessage={setMessage}
+        />
       ) : liste.length === 0 ? (
         <div className="vide">
           <div className="vide-emoji">{onglet === 'brouillon' ? '📝' : onglet === 'en_route' ? '🚚' : '📦'}</div>
@@ -144,17 +173,23 @@ function EspaceEtranger() {
         </div>
       ) : (
         liste.map((e) => (
-          <CarteEnvoi
-            key={e.id}
-            envoi={e}
-            nbProduits={(e.envoi_items || []).length}
-            nbPieces={totalPieces(e.envoi_items)}
-            libelleAction={e.statut === 'brouillon' ? 'Continuer' : 'Voir le détail'}
-            onOuvrir={() => {
-              setMessage(null)
-              setVue(e.statut === 'brouillon' ? { type: 'edition', envoi: e } : { type: 'detail', envoi: e })
-            }}
-          />
+          <div key={e.id}>
+            {(e.alertes || []).length > 0 && (
+              <p className="et-alerte">
+                ⚠️ {e.alertes.length} alerte{e.alertes.length > 1 ? 's' : ''} sur {referenceEnvoi(e)} : ouvre-le pour la lire.
+              </p>
+            )}
+            <CarteEnvoi
+              envoi={e}
+              nbProduits={(e.envoi_items || []).length}
+              nbPieces={totalPieces(e.envoi_items)}
+              libelleAction={e.statut === 'brouillon' ? 'Continuer' : 'Voir le détail'}
+              onOuvrir={() => {
+                setMessage(null)
+                setVue(e.statut === 'brouillon' ? { type: 'edition', envoi: e, ajouts: [] } : { type: 'detail', envoi: e })
+              }}
+            />
+          </div>
         ))
       )}
     </section>
@@ -179,22 +214,44 @@ function etatInitial(envoi) {
       produit_id: i.produit_id,
       quantite_envoyee: String(i.quantite_envoyee),
       prix_achat_unitaire: i.prix_achat_unitaire == null ? '' : String(i.prix_achat_unitaire),
+      // Ligne venant d'une commande : produit et quantité imposés par la commande
+      commande_item_id: i.commande_item_id || null,
+      commande_numero: i.commande_numero || null,
+      taille: i.taille || null,
+      couleur: i.couleur || null,
     })),
   }
 }
 
-function EditeurEnvoi({ envoi, produits, onFermer }) {
+/* Une ligne "à acheter" devient une ligne d'envoi */
+const ligneDepuisCommande = (l) => ({
+  produit_id: l.produit_id,
+  quantite_envoyee: String(l.quantite),
+  prix_achat_unitaire: l.prix_achat == null ? '' : String(l.prix_achat),
+  commande_item_id: l.id,
+  commande_numero: l.commande_numero,
+  taille: l.taille || null,
+  couleur: l.couleur || null,
+})
+
+function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
   const supabase = createClient()
 
   const [depart] = useState(() => etatInitial(envoi)) // photo de l'état de départ
   const [infos, setInfos] = useState(depart.infos)
-  const [lignes, setLignes] = useState(depart.lignes)
+  // Lignes déjà dans le brouillon + celles qu'on vient de cocher dans "À acheter"
+  const [lignes, setLignes] = useState(() => {
+    const dejaLa = new Set(depart.lignes.map((l) => l.commande_item_id).filter(Boolean))
+    return [...depart.lignes, ...ajouts.filter((a) => !dejaLa.has(a.id)).map(ligneDepuisCommande)]
+  })
+  const [alertes, setAlertes] = useState(envoi?.alertes || [])
   // On garde l'id après le 1er enregistrement : cliquer 2 fois sur
   // "Enregistrer" ne crée donc jamais 2 envois.
   const [idEnvoi, setIdEnvoi] = useState(envoi?.id || null)
   const [recherche, setRecherche] = useState('')
   const [erreur, setErreur] = useState('')
   const [occupe, setOccupe] = useState(false)
+  const [ajoutHorsCommandeOuvert, setAjoutHorsCommandeOuvert] = useState(false)
 
   const modifie = JSON.stringify({ infos, lignes }) !== JSON.stringify(depart)
   const produitParId = Object.fromEntries(produits.map((p) => [p.id, p]))
@@ -202,7 +259,12 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
   const changerInfo = (cle, valeur) => setInfos({ ...infos, [cle]: valeur })
 
   /* ── Recherche de produits à ajouter ── */
-  const dejaAjoutes = new Set(lignes.map((l) => l.produit_id))
+  // Un même produit "hors commande" ne peut figurer qu'une fois par envoi (la base refuse sinon).
+  // Les lignes de commande, elles, peuvent répéter un produit : elles ne comptent pas ici.
+  const dejaAjoutes = new Set(lignes.filter((l) => !l.commande_item_id).map((l) => l.produit_id))
+  const indexExistant = lignes.findIndex(
+    (l) => !l.commande_item_id && normaliserTexte(produitParId[l.produit_id]?.nom).includes(normaliserTexte(recherche))
+  )
   const resultats = recherche.trim()
     ? produits
         .filter((p) => !dejaAjoutes.has(p.id) && normaliserTexte(p.nom).includes(normaliserTexte(recherche)))
@@ -269,6 +331,8 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
         produit_id: l.produit_id,
         quantite_envoyee: parseInt(l.quantite_envoyee, 10),
         prix_achat_unitaire: l.prix_achat_unitaire === '' ? null : Number(l.prix_achat_unitaire),
+        // Pour une ligne de commande, la base impose le produit et la quantité
+        ...(l.commande_item_id ? { commande_item_id: l.commande_item_id } : {}),
       })),
     })
     if (data) setIdEnvoi(data)
@@ -277,7 +341,7 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
 
   const gererErreur = (error) => {
     if (erreurNecessiteRechargement(error)) {
-      onFermer({ type: 'err', texte: messageErreur(error) })
+      onFermer({ type: 'err', texte: messageErreur(error), ongletCible: 'acheter' })
     } else {
       setErreur(messageErreur(error))
     }
@@ -326,7 +390,7 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
   }
 
   const supprimerBrouillon = async () => {
-    if (!window.confirm('Supprimer ce brouillon ? Cette action est définitive.')) return
+    if (!window.confirm('Supprimer ce brouillon ? Les commandes qu\u2019il contient retourneront dans « À acheter ».')) return
     if (!idEnvoi) { onFermer(); return }
 
     setOccupe(true)
@@ -335,6 +399,15 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
 
     if (error) { gererErreur(error); return }
     onFermer({ texte: 'Brouillon supprimé.', ongletCible: 'brouillon' })
+  }
+
+  const effacerAlertes = async () => {
+    setOccupe(true)
+    const { error } = await supabase.rpc('effacer_alertes_envoi', { p_envoi_id: idEnvoi })
+    setOccupe(false)
+    if (error) { setErreur(messageErreur(error)); return }
+    setAlertes([])
+    onRecharger()
   }
 
   const retour = () => {
@@ -356,6 +429,18 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
           <p className="page-sub">Tu peux enregistrer et revenir plus tard, tant que l'envoi n'est pas parti.</p>
         </div>
       </div>
+
+      {alertes.length > 0 && (
+        <div className="ed-alertes" role="alert">
+          <b>⚠️ À lire</b>
+          <ul>
+            {alertes.map((a, i) => (
+              <li key={i}>{a.date && <small>{formatDateCourte(a.date)} · </small>}{a.message}</li>
+            ))}
+          </ul>
+          <button onClick={effacerAlertes} disabled={occupe} className="btn-danger">J&apos;ai compris</button>
+        </div>
+      )}
 
       {/* ── 1. Informations du colis ── */}
       <div className="carte">
@@ -419,6 +504,12 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
         <h2 className="carte-titre">2. Le contenu</h2>
         <p className="ed-aide">Prix d'achat en <b>francs comoriens (KMF)</b>, après conversion.</p>
 
+        <button onClick={() => setAjoutHorsCommandeOuvert(!ajoutHorsCommandeOuvert)} aria-expanded={ajoutHorsCommandeOuvert}
+          className="btn-secondary ed-replier">
+          {ajoutHorsCommandeOuvert ? '− ' : '+ '}Ajouter un produit hors commande (pour le stock)
+        </button>
+
+        {ajoutHorsCommandeOuvert && (
         <div className="ed-recherche">
           <input
             type="search"
@@ -444,38 +535,60 @@ function EditeurEnvoi({ envoi, produits, onFermer }) {
               ))}
             </ul>
           )}
-          {rechercheDejaDansEnvoi && <p className="ed-info">Ce produit est déjà dans l'envoi : change plutôt sa quantité.</p>}
+          {rechercheDejaDansEnvoi && (
+            <p className="ed-info">
+              Ce produit est déjà dans l&apos;envoi (hors commande).{' '}
+              {indexExistant >= 0 && (
+                <button onClick={() => { ajusterQuantite(indexExistant, 1); setRecherche('') }} className="btn-secondary">
+                  + 1 sur la ligne existante
+                </button>
+              )}
+            </p>
+          )}
           {recherche.trim() && resultats.length === 0 && !rechercheDejaDansEnvoi && (
             <p className="ed-info">Aucun produit trouvé. S'il n'existe pas encore, demande à l'admin de le créer.</p>
           )}
         </div>
+        )}
 
         {lignes.length === 0 ? (
-          <p className="ed-vide">Aucun produit pour l'instant. Cherche-les ci-dessus.</p>
+          <p className="ed-vide">Aucun produit pour l'instant. Choisis des lignes dans « À acheter », ou ajoute un produit hors commande.</p>
         ) : (
           <ul className="ed-lignes">
             {lignes.map((l, i) => {
               const p = produitParId[l.produit_id]
               return (
-                <li key={l.produit_id} className="ed-ligne">
+                <li key={l.commande_item_id || l.produit_id} className="ed-ligne">
                   <div className="ed-ligne-haut">
                     <span className="ed-thumb"><ProduitImage produit={p || { nom: '?' }} emojiSize={18} /></span>
-                    <b className="ed-ligne-nom">{p?.nom || 'Produit supprimé'}</b>
+                    <span className="ed-ligne-nom">
+                      <b>{p?.nom || 'Produit supprimé'}</b>
+                      {l.commande_item_id && (
+                        <small className="ed-pour">
+                          Pour {l.commande_numero ? referenceCommande(l.commande_numero) : 'une commande'}
+                          {(l.taille || l.couleur) && ` · ${[l.taille, l.couleur].filter(Boolean).join(' · ')}`}
+                        </small>
+                      )}
+                    </span>
                     <button onClick={() => retirerLigne(i)} className="ed-retirer" aria-label={`Retirer ${p?.nom || 'ce produit'}`}>✕</button>
                   </div>
                   <div className="ed-ligne-champs">
                     <div>
                       <span className="ed-mini-label">Quantité</span>
-                      <div className="ed-qte">
-                        <button onClick={() => ajusterQuantite(i, -1)} aria-label="Retirer 1">−</button>
-                        <input
-                          inputMode="numeric"
-                          value={l.quantite_envoyee}
-                          aria-label={`Quantité de ${p?.nom}`}
-                          onChange={(e) => changerLigne(i, 'quantite_envoyee', e.target.value.replace(/\D/g, ''))}
-                        />
-                        <button onClick={() => ajusterQuantite(i, 1)} aria-label="Ajouter 1">+</button>
-                      </div>
+                      {l.commande_item_id ? (
+                        <p className="ed-qte-fixe"><b>× {l.quantite_envoyee}</b><small>fixée par la commande</small></p>
+                      ) : (
+                        <div className="ed-qte">
+                          <button onClick={() => ajusterQuantite(i, -1)} aria-label="Retirer 1">−</button>
+                          <input
+                            inputMode="numeric"
+                            value={l.quantite_envoyee}
+                            aria-label={`Quantité de ${p?.nom}`}
+                            onChange={(e) => changerLigne(i, 'quantite_envoyee', e.target.value.replace(/\D/g, ''))}
+                          />
+                          <button onClick={() => ajusterQuantite(i, 1)} aria-label="Ajouter 1">+</button>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <span className="ed-mini-label">Prix d'achat / pièce</span>
@@ -555,7 +668,18 @@ const css = `
   .ed-lignes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   .ed-ligne { background: ${C.sand}; border-radius: 12px; padding: 10px 12px; }
   .ed-ligne-haut { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .ed-ligne-nom { flex: 1; font-size: 14px; min-width: 0; }
+  .ed-ligne-nom { flex: 1; font-size: 14px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ed-pour { font-size: 12px; font-weight: 700; color: ${C.goldDeep}; }
+  .ed-qte-fixe { margin: 0; min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
+  .ed-qte-fixe b { font-size: 17px; }
+  .ed-qte-fixe small { font-size: 11px; color: ${C.inkSoft}; }
+  .ed-replier { width: 100%; margin-bottom: 12px; white-space: normal; text-align: left; justify-content: flex-start; }
+  .ed-alertes {
+    background: #FBF0EE; border: 1.5px solid ${C.clay}; border-radius: 14px; padding: 14px;
+    margin-bottom: 12px; color: ${C.inkDeep}; font-size: 14px;
+  }
+  .ed-alertes b { color: ${C.clay}; }
+  .ed-alertes ul { margin: 8px 0 12px; padding-left: 18px; line-height: 1.5; }
   .ed-retirer {
     width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer;
     background: #fff; color: ${C.clay}; font-size: 13px; flex-shrink: 0;
