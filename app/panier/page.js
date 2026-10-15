@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import BarreNavMobile from '@/components/BarreNavMobile'
 import { getPanier, modifierQuantite, retirerDuPanier } from '@/lib/cart'
 
 /* ─────────── Palette (identique aux autres pages) ─────────── */
@@ -219,20 +220,7 @@ export default function Panier() {
       <Footer />
 
       {/* ── BOTTOM NAV (mobile) ── */}
-      <nav className="bottom-nav">
-        {[
-          { icon: '🏠', label: 'Accueil', href: '/' },
-          { icon: '🔍', label: 'Explorer', href: '/explorer' },
-          { icon: '🛒', label: 'Panier', href: '/panier', active: true },
-          { icon: '📦', label: 'Commandes', href: user ? '/commandes' : '/login' },
-          { icon: '👤', label: user ? 'Profil' : 'Connexion', href: user ? '/profil' : '/login' },
-        ].map((item) => (
-          <a key={item.label} href={item.href} className={`nav-item ${item.active ? 'nav-on' : ''}`}>
-            <span className="nav-icon">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-          </a>
-        ))}
-      </nav>
+      <BarreNavMobile actif="panier" />
     </div>
   )
 }

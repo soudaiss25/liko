@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import BarreNavMobile from '@/components/BarreNavMobile'
 import ProduitImage from '@/components/ProduitImage'
 import { ajouterAuPanier } from '@/lib/cart'
 import { flagPour, formatKMF } from '@/lib/produit'
@@ -307,20 +308,7 @@ export default function FicheProduit() {
       <Footer />
 
       {/* ── BOTTOM NAV (mobile) ── */}
-      <nav className="bottom-nav" aria-label="Navigation principale">
-        {[
-          { icon: '🏠', label: 'Accueil', href: '/' },
-          { icon: '🔍', label: 'Explorer', href: '/explorer' },
-          { icon: '🛒', label: 'Panier', href: '/panier' },
-          { icon: '📦', label: 'Commandes', href: user ? '/commandes' : '/login' },
-          { icon: '👤', label: user ? 'Profil' : 'Connexion', href: user ? '/profil' : '/login' },
-        ].map((item) => (
-          <a key={item.label} href={item.href} className="nav-item">
-            <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-            <span className="nav-label">{item.label}</span>
-          </a>
-        ))}
-      </nav>
+      <BarreNavMobile />
     </div>
   )
 }

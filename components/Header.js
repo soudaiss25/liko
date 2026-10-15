@@ -98,7 +98,7 @@ export default function Header({ search, onSearchChange }) {
 
           <div className="hd-actions">
             {estConnecte ? (
-              <a href="/profil" className="hd-action">
+              <a href="/commandes" className="hd-action">
                 <span className="hd-action-ico">👤</span>
                 <span className="hd-action-txt">
                   <small>Bonjour</small>

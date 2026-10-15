@@ -16,16 +16,24 @@ const ITEMS = [
 
 export default function BarreNavMobile({ actif }) {
   const [connecte, setConnecte] = useState(false)
+  const [role, setRole] = useState(null)
 
   useEffect(() => {
-    createClient().auth.getUser().then(({ data }) => setConnecte(!!data?.user))
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data }) => {
+      setConnecte(!!data?.user)
+      if (!data?.user) return
+      const { data: profil } = await supabase.from('users').select('role').eq('id', data.user.id).single()
+      setRole(profil?.role || null)
+    })
   }, [])
 
+  /* Accueil, Panier, Commandes pour tout le monde ;
+     puis Connexion si non connecté, Admin si le rôle est admin */
   const items = [
     ...ITEMS,
-    connecte
-      ? { id: 'profil', icone: '👤', label: 'Profil', href: '/profil' }
-      : { id: 'connexion', icone: '👤', label: 'Connexion', href: '/login' },
+    ...(!connecte ? [{ id: 'connexion', icone: '👤', label: 'Connexion', href: '/login' }] : []),
+    ...(role === 'admin' ? [{ id: 'admin', icone: '⚙️', label: 'Admin', href: '/admin' }] : []),
   ]
 
   return (
