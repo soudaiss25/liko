@@ -1,26 +1,17 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { ShoppingCart, Trash2, Minus, Plus, Truck, Banknote } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import BarreNavMobile from '@/components/BarreNavMobile'
+import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide, { EtatErreur } from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 import { getPanier, modifierQuantite, retirerDuPanier } from '@/lib/cart'
-
-/* ─────────── Palette (identique aux autres pages) ─────────── */
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A', white: '#FFFFFF',
-  bgGrey: '#F2F3F5',
-}
-
-const EMOJI_CAT = {
-  'Vêtements': '👕', 'Chaussures': '👟', 'Beauté': '💄',
-  'Accessoires': '👜', 'Maison': '🏠', 'Tech': '📱',
-}
-const emojiPour = (cat) => EMOJI_CAT[cat] || '📦'
+import { C } from '@/lib/theme'
 
 export default function Panier() {
   const supabase = createClient()
@@ -29,6 +20,7 @@ export default function Panier() {
   const [lignes, setLignes] = useState([])       // panier brut (localStorage)
   const [produits, setProduits] = useState({})   // { id: produit } — données fraîches Supabase
   const [chargement, setChargement] = useState(true)
+  const [erreur, setErreur] = useState(false)
 
   useEffect(() => {
     const chargerUser = async () => {
@@ -40,6 +32,7 @@ export default function Panier() {
 
   const chargerPanier = useCallback(async () => {
     setChargement(true)
+    setErreur(false)
     const panierBrut = getPanier()
     setLignes(panierBrut)
 
@@ -50,7 +43,8 @@ export default function Panier() {
     }
 
     const ids = [...new Set(panierBrut.map((l) => l.id))]
-    const { data } = await supabase.from('produits').select('*').in('id', ids)
+    const { data, error } = await supabase.from('produits').select('*').in('id', ids)
+    if (error) setErreur(true)
 
     const map = {}
     ;(data || []).forEach((p) => { map[p.id] = p })
@@ -100,19 +94,21 @@ export default function Panier() {
 
       <Header />
 
-      <div className="wrap">
+      <main className="wrap">
         <h1 className="page-title">Mon panier</h1>
 
         {chargement ? (
-          <div className="state">Chargement du panier…</div>
+          <ChargementListe nb={3} hauteur={112} />
+
+        ) : erreur ? (
+          <EtatErreur texte="Ton panier ne s'est pas chargé. Vérifie ta connexion." onReessayer={chargerPanier} />
 
         ) : lignesValides.length === 0 ? (
-          <div className="empty">
-            <div className="empty-emoji">🛒</div>
-            <div className="empty-title">Ton panier est vide</div>
-            <p className="empty-sub">Parcours le catalogue pour trouver ton bonheur.</p>
-            <a href="/" className="empty-cta">Voir les produits →</a>
-          </div>
+          <EtatVide
+            icone={ShoppingCart}
+            texte="Ton panier est vide."
+            action={{ label: 'Voir les produits', href: '/' }}
+          />
 
         ) : (
           <div className="panier-layout">
@@ -121,7 +117,7 @@ export default function Panier() {
             <div className="lignes-col">
               {!user && (
                 <div className="guest-banner">
-                  <span>💡 Connecte-toi pour sauvegarder ton panier d'une visite à l'autre</span>
+                  <span>Connecte-toi pour retrouver ton panier d&apos;une visite à l&apos;autre.</span>
                   <a href="/login" className="guest-banner-link">Se connecter</a>
                 </div>
               )}
@@ -130,8 +126,8 @@ export default function Panier() {
                 const p = produits[ligne.id]
                 return (
                   <div key={`${ligne.id}-${ligne.mode}`} className="ligne">
-                    <a href={`/produits/${p.id}`} className="ligne-img">
-                      <span>{emojiPour(p.categorie)}</span>
+                    <a href={`/produits/${p.id}`} className="ligne-img" aria-label={`Voir ${p.nom}`}>
+                      <ProduitImage produit={p} emojiSize={36} />
                     </a>
 
                     <div className="ligne-info">
@@ -139,34 +135,39 @@ export default function Panier() {
                       <div className="ligne-mode">
                         {ligne.mode === 'lot'
                           ? `Lot de ${p.qte_min_gros || 6} pièces`
-                          : 'À l\u2019unité'}
+                          : 'À l’unité'}
                       </div>
                       <div className="ligne-price-unit">
                         {ligne.mode === 'lot'
-                          ? `${Number(p.prix_gros).toLocaleString('fr-FR')} KMF / lot`
-                          : `${Number(p.prix_detail).toLocaleString('fr-FR')} KMF / pièce`}
+                          ? `${Number(p.prix_gros).toLocaleString('fr-FR')} KMF le lot`
+                          : `${Number(p.prix_detail).toLocaleString('fr-FR')} KMF la pièce`}
                       </div>
                     </div>
 
-                    <div className="ligne-qty">
-                      <button
-                        onClick={() => changerQuantite(ligne.id, ligne.mode, ligne.quantite - 1)}
-                        className="qty-btn"
-                      >−</button>
-                      <span className="qty-value">{ligne.quantite}</span>
-                      <button
-                        onClick={() => changerQuantite(ligne.id, ligne.mode, ligne.quantite + 1)}
-                        className="qty-btn"
-                      >+</button>
-                    </div>
+                    <div className="ligne-bas">
+                      <div className="ligne-qty">
+                        <button
+                          onClick={() => changerQuantite(ligne.id, ligne.mode, ligne.quantite - 1)}
+                          className="qty-btn"
+                          aria-label={`Diminuer la quantité de ${p.nom}`}
+                        ><Icone icone={Minus} taille={18} /></button>
+                        <span className="qty-value" aria-live="polite">{ligne.quantite}</span>
+                        <button
+                          onClick={() => changerQuantite(ligne.id, ligne.mode, ligne.quantite + 1)}
+                          className="qty-btn"
+                          aria-label={`Augmenter la quantité de ${p.nom}`}
+                        ><Icone icone={Plus} taille={18} /></button>
+                      </div>
 
-                    <div className="ligne-total">
-                      {prixLigne(ligne).toLocaleString('fr-FR')} <span>KMF</span>
-                    </div>
+                      <div className="ligne-total">
+                        {prixLigne(ligne).toLocaleString('fr-FR')} <span>KMF</span>
+                      </div>
 
-                    <button onClick={() => retirer(ligne.id, ligne.mode)} className="ligne-remove" title="Retirer">
-                      🗑
-                    </button>
+                      <button onClick={() => retirer(ligne.id, ligne.mode)} className="ligne-remove"
+                        aria-label={`Retirer ${p.nom} du panier`}>
+                        <Icone icone={Trash2} />
+                      </button>
+                    </div>
                   </div>
                 )
               })}
@@ -183,7 +184,7 @@ export default function Panier() {
                 </div>
                 <div className="summary-row">
                   <span>Livraison</span>
-                  <span className="summary-livraison">Calculée à l'étape suivante</span>
+                  <span className="summary-livraison">Calculée à l&apos;étape suivante</span>
                 </div>
 
                 <div className="summary-divider" />
@@ -194,28 +195,24 @@ export default function Panier() {
                 </div>
 
                 <a href="/commande" className="checkout-btn">
-                  Passer la commande →
+                  Passer la commande
                 </a>
 
                 {!user && (
                   <p className="checkout-note">
-                    💡 Pas besoin de compte pour l'instant — la connexion est demandée
-                    seulement pour valider ta commande.
+                    Tu peux commander sans compte : tu paies à la livraison.
                   </p>
                 )}
 
                 <div className="summary-trust">
-                  <div>🚚 Livraison sur les 3 îles</div>
-                  <div>💵 Paiement à la livraison disponible</div>
-                  <div>💬 Une question ? Contacte-nous sur WhatsApp</div>
+                  <div><Icone icone={Truck} /> Livraison sur les 3 îles</div>
+                  <div><Icone icone={Banknote} /> Paiement à la livraison</div>
                 </div>
               </div>
             </div>
           </div>
         )}
-
-        <div style={{ height: '40px' }} />
-      </div>
+      </main>
 
       <Footer />
 
@@ -227,135 +224,113 @@ export default function Panier() {
 
 /* ─────────── CSS ─────────── */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
 
   .app {
     background: ${C.bgGrey}; min-height: 100vh;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-    color: ${C.inkDeep}; padding-bottom: 70px;
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+    color: ${C.inkDeep}; padding-bottom: 72px;
   }
 
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-  .page-title { font-size: 24px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 20px; }
-
-  .state { text-align: center; padding: 80px 20px; color: ${C.inkSoft}; font-size: 15px; }
-
-  /* ── Vide ── */
-  .empty { text-align: center; padding: 70px 20px; }
-  .empty-emoji { font-size: 60px; margin-bottom: 14px; }
-  .empty-title { font-size: 19px; font-weight: 800; color: ${C.inkDeep}; margin-bottom: 8px; }
-  .empty-sub { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 22px; }
-  .empty-cta {
-    display: inline-block; background: ${C.ink}; color: #fff; text-decoration: none;
-    padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px;
-  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 16px 16px 32px; }
+  .page-title { font-size: 24px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 16px; }
 
   /* ── Layout ── */
   .panier-layout { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
 
   .guest-banner {
-    background: #FFF6E4; border: 1px solid #F1DDAE; border-radius: 10px; padding: 12px 16px;
-    font-size: 13.5px; color: #7A5C1E; font-weight: 600; margin-bottom: 16px;
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 8px; padding: 12px 16px;
+    font-size: 14px; color: ${C.inkDeep}; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
-  .guest-banner-link { color: ${C.goldDeep}; font-weight: 700; text-decoration: none; white-space: nowrap; }
+  .guest-banner-link {
+    color: ${C.ink}; font-weight: 700; text-decoration: underline; white-space: nowrap;
+    min-height: 44px; display: inline-flex; align-items: center;
+  }
 
   /* ── Ligne panier ── */
   .lignes-col { display: flex; flex-direction: column; gap: 12px; }
   .ligne {
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px;
-    display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center;
-    position: relative;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 12px;
+    display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: start;
   }
   .ligne-img {
-    width: 64px; height: 64px; border-radius: 10px; background: ${C.sand};
-    display: flex; align-items: center; justify-content: center; font-size: 30px;
-    text-decoration: none; flex-shrink: 0;
+    width: 72px; height: 72px; border-radius: 8px; background: ${C.sand};
+    overflow: hidden; display: block; flex-shrink: 0;
   }
   .ligne-info { min-width: 0; }
   .ligne-name {
-    display: block; font-size: 14.5px; font-weight: 700; color: ${C.inkDeep};
-    text-decoration: none; margin-bottom: 3px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    display: block; font-size: 15px; font-weight: 700; color: ${C.inkDeep};
+    text-decoration: none; margin: -10px 0 0; min-height: 44px; display: flex; align-items: center; overflow-wrap: anywhere;
   }
-  .ligne-mode { font-size: 12px; color: ${C.goldDeep}; font-weight: 600; margin-bottom: 2px; }
-  .ligne-price-unit { font-size: 12px; color: ${C.inkSoft}; }
+  .ligne-name:hover { text-decoration: underline; }
+  .ligne-mode { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 4px; }
+  .ligne-price-unit { font-size: 14px; color: ${C.inkSoft}; }
 
+  .ligne-bas {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
   .ligne-qty {
-    grid-column: 1 / -1; display: flex; align-items: center; gap: 0; width: fit-content;
-    border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden; margin-top: 6px;
+    display: flex; align-items: center; width: fit-content;
+    border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden;
   }
   .qty-btn {
-    width: 34px; height: 34px; border: none; background: ${C.sand}; cursor: pointer;
-    font-size: 16px; font-weight: 700; color: ${C.inkDeep};
+    width: 44px; height: 44px; border: none; background: ${C.sand}; cursor: pointer; color: ${C.inkDeep};
+    display: flex; align-items: center; justify-content: center;
   }
-  .qty-value { width: 40px; text-align: center; font-size: 14px; font-weight: 700; color: ${C.inkDeep}; }
+  .qty-btn:hover { background: ${C.line}; }
+  .qty-value { width: 44px; text-align: center; font-size: 16px; font-weight: 700; color: ${C.inkDeep}; }
 
-  .ligne-total {
-    grid-column: 1 / -1; font-size: 16px; font-weight: 800; color: ${C.clay};
-    text-align: right; margin-top: -34px;
-  }
-  .ligne-total span { font-size: 11px; font-weight: 600; color: ${C.inkSoft}; }
+  .ligne-total { margin-left: auto; font-size: 18px; font-weight: 800; color: ${C.clay}; text-align: right; }
+  .ligne-total span { font-size: 13px; font-weight: 600; color: ${C.inkSoft}; }
 
   .ligne-remove {
-    position: absolute; top: 10px; right: 10px; width: 30px; height: 30px;
-    border: none; background: none; cursor: pointer; font-size: 15px; color: ${C.inkSoft};
-    border-radius: 8px;
+    width: 44px; height: 44px; border: none; background: none; cursor: pointer;
+    color: ${C.inkSoft}; border-radius: 8px; display: flex; align-items: center; justify-content: center;
   }
-  .ligne-remove:hover { background: #FDECEB; color: ${C.clay}; }
+  .ligne-remove:hover { background: #FBF0EE; color: ${C.clay}; }
 
   /* ── Résumé ── */
   .summary-col { width: 100%; }
-  .summary-box { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 22px; }
-  .summary-title { font-size: 16px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 16px; }
+  .summary-box { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; }
+  .summary-title { font-size: 18px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 16px; }
   .summary-row {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 13.5px; color: ${C.inkSoft}; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 15px; color: ${C.inkSoft}; margin-bottom: 8px;
   }
-  .summary-livraison { font-size: 12px; font-style: italic; }
+  .summary-livraison { font-size: 14px; text-align: right; }
   .summary-divider { height: 1px; background: ${C.line}; margin: 12px 0; }
   .summary-total {
-    display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px;
+    display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px;
   }
-  .summary-total span { font-size: 14px; font-weight: 700; color: ${C.inkDeep}; }
+  .summary-total span { font-size: 16px; font-weight: 700; color: ${C.inkDeep}; }
   .summary-total b { font-size: 22px; font-weight: 800; color: ${C.inkDeep}; }
 
   .checkout-btn {
-    display: block; text-align: center; width: 100%; height: 50px; line-height: 50px;
+    display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px;
     background: ${C.gold}; color: ${C.inkDeep}; text-decoration: none;
-    border-radius: 10px; font-weight: 800; font-size: 14.5px;
-    transition: background .15s;
+    border-radius: 8px; font-weight: 800; font-size: 16px;
   }
   .checkout-btn:hover { background: ${C.goldDeep}; }
 
-  .checkout-note { font-size: 11.5px; color: ${C.inkSoft}; line-height: 1.5; margin: 12px 0 0; }
+  .checkout-note { font-size: 14px; color: ${C.inkSoft}; line-height: 1.5; margin: 12px 0 0; }
 
   .summary-trust {
-    margin-top: 18px; padding-top: 16px; border-top: 1px solid ${C.line};
-    display: flex; flex-direction: column; gap: 8px; font-size: 12px; color: ${C.inkSoft};
+    margin-top: 16px; padding-top: 16px; border-top: 1px solid ${C.line};
+    display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: ${C.inkSoft};
   }
-
-  /* ── Bottom nav (mobile) ── */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
-    border-top: 1px solid ${C.line}; display: flex; padding: 9px 0 14px; z-index: 40;
-  }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; }
-  .nav-icon { font-size: 19px; opacity: 0.4; }
-  .nav-label { font-size: 10px; font-weight: 600; color: #A9B4B9; }
-  .nav-on .nav-icon { opacity: 1; }
-  .nav-on .nav-label { color: ${C.ink}; }
+  .summary-trust > div { display: flex; align-items: center; gap: 8px; }
 
   /* ═══════════ RESPONSIVE ═══════════ */
   @media (min-width: 900px) {
     .panier-layout { grid-template-columns: 2fr 1fr; }
-    .ligne { grid-template-columns: 72px 1fr auto auto auto; }
-    .ligne-img { width: 72px; height: 72px; font-size: 34px; }
-    .ligne-qty { grid-column: auto; margin-top: 0; }
-    .ligne-total { grid-column: auto; margin-top: 0; text-align: right; min-width: 90px; }
+    .ligne { grid-template-columns: 88px 1fr auto; }
+    .ligne-img { width: 88px; height: 88px; }
+    .ligne-bas { grid-column: auto; flex-wrap: nowrap; }
+    .ligne-total { min-width: 100px; }
     .summary-col { position: sticky; top: 90px; }
-    .bottom-nav { display: none; }
+  }
+  @media (min-width: 1000px) {
     .app { padding-bottom: 0; }
   }
 `

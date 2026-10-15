@@ -8,16 +8,13 @@
    (ex : bouton "Voir" sur "3 produits sans photo").
 */
 
+import { Search, Pencil, Trash2, Plus, Package } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
 import { CATEGORIES, formatKMF, prixPieceEnLot, normaliserTexte } from '@/lib/produit'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 /* Valeurs "rien de filtré". Exportée pour que la page puisse s'en servir. */
 export const FILTRES_VIDES = {
   texte: '',
@@ -92,14 +89,14 @@ export default function ListeProduits({
           <h1 id="titre-produits" className="page-title">Produits</h1>
           <p className="page-sub">{produits.length} produit{produits.length > 1 ? 's' : ''} au total</p>
         </div>
-        <button onClick={onAjouter} className="btn-primary">+ Ajouter un produit</button>
+        <button onClick={onAjouter} className="btn-primary"><Icone icone={Plus} taille={18} /> Ajouter un produit</button>
       </div>
 
       {/* ════════ FILTRES ════════ */}
       <div className="lf-box">
         {/* Recherche */}
         <div className="lf-search">
-          <span className="lf-search-icone" aria-hidden="true">🔍</span>
+          <span className="lf-search-icone"><Icone icone={Search} taille={18} /></span>
           <input
             type="search"
             className="input lf-search-input"
@@ -152,9 +149,9 @@ export default function ListeProduits({
         {/* Filtres oui/non → petites puces qu'on allume/éteint */}
         <div className="lf-chips">
           {[
-            { cle: 'sansPhoto', label: '📷 Sans photo' },
-            { cle: 'avecLot', label: '📦 Vendu par lot' },
-            { cle: 'jamaisVendu', label: '💤 Jamais vendu' },
+            { cle: 'sansPhoto', label: 'Sans photo' },
+            { cle: 'avecLot', label: 'Vendu par lot' },
+            { cle: 'jamaisVendu', label: 'Jamais vendu' },
           ].map((c) => (
             <button
               key={c.cle}
@@ -183,21 +180,9 @@ export default function ListeProduits({
 
       {/* ════════ LISTE ════════ */}
       {produits.length === 0 ? (
-        <div className="empty">
-          <div className="empty-emoji">📦</div>
-          <div className="empty-title">Aucun produit pour l'instant</div>
-          <button onClick={onAjouter} className="btn-primary" style={{ marginTop: '16px' }}>
-            + Ajouter ton premier produit
-          </button>
-        </div>
+        <EtatVide icone={Package} texte="Aucun produit pour l'instant." action={{ label: 'Ajouter ton premier produit', onClick: onAjouter }} />
       ) : tries.length === 0 ? (
-        <div className="empty">
-          <div className="empty-emoji">🔍</div>
-          <div className="empty-title">Aucun produit ne correspond à ces filtres</div>
-          <button onClick={() => setFiltres(FILTRES_VIDES)} className="btn-secondary" style={{ marginTop: '16px' }}>
-            Effacer les filtres
-          </button>
-        </div>
+        <EtatVide icone={Search} texte="Aucun produit ne correspond à ces filtres." action={{ label: 'Effacer les filtres', onClick: () => setFiltres(FILTRES_VIDES) }} />
       ) : (
         <div className="liste">
           {tries.map((p) => {
@@ -231,12 +216,12 @@ export default function ListeProduits({
 
                 <button onClick={() => onToggleActif(p)} className={`lp-statut ${p.actif ? 'statut-on' : 'statut-off'}`}
                   aria-label={p.actif ? `${p.nom} est en ligne, cliquer pour masquer` : `${p.nom} est masqué, cliquer pour mettre en ligne`}>
-                  {p.actif ? '● En ligne' : '○ Masqué'}
+                  {p.actif ? 'En ligne' : 'Masqué'}
                 </button>
 
                 <div className="lp-actions">
-                  <button onClick={() => onModifier(p)} className="lp-btn">✏️ Modifier</button>
-                  <button onClick={() => onSupprimer(p)} className="lp-btn lp-btn-danger" aria-label={`Supprimer ${p.nom}`}>🗑</button>
+                  <button onClick={() => onModifier(p)} className="lp-btn"><Icone icone={Pencil} taille={18} /> Modifier</button>
+                  <button onClick={() => onSupprimer(p)} className="lp-btn lp-btn-danger" aria-label={`Supprimer ${p.nom}`}><Icone icone={Trash2} taille={18} /></button>
                 </div>
               </div>
             )
@@ -251,96 +236,94 @@ export default function ListeProduits({
 const css = `
   /* ── Filtres ── */
   .lf-box {
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px;
-    display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px;
+    display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;
   }
   .lf-search { position: relative; }
-  .lf-search-icone { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; }
-  .lf-search-input { padding-left: 38px; }
+  .lf-search-icone { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; color: ${C.inkSoft}; }
+  .lf-search-input { padding-left: 44px; }
 
-  .lf-ligne { display: flex; flex-wrap: wrap; gap: 10px; }
+  .lf-ligne { display: flex; flex-wrap: wrap; gap: 12px; }
   .lf-select { flex: 1 1 180px; width: auto; }
 
   .lf-segment {
-    display: flex; background: ${C.sand}; border-radius: 10px; padding: 3px; gap: 2px;
+    display: flex; background: ${C.sand}; border-radius: 8px; padding: 4px; gap: 4px;
     flex: 1 1 100%;
   }
   .lf-seg {
     flex: 1; border: none; background: none; cursor: pointer; font-family: inherit;
-    font-size: 13px; font-weight: 600; color: ${C.inkSoft};
-    padding: 9px 8px; border-radius: 8px; white-space: nowrap;
+    font-size: 15px; font-weight: 600; color: ${C.inkSoft};
+    min-height: 44px; padding: 0 8px; border-radius: 6px; white-space: nowrap;
   }
-  .lf-seg-on { background: #fff; color: ${C.inkDeep}; box-shadow: 0 1px 3px rgba(20,58,75,0.12); }
-  .lf-seg-nb { font-size: 11.5px; color: ${C.inkSoft}; font-weight: 700; margin-left: 2px; }
+  .lf-seg-on { background: ${C.white}; color: ${C.inkDeep}; }
+  .lf-seg-nb { font-size: 14px; color: ${C.inkSoft}; font-weight: 700; margin-left: 4px; }
 
   .lf-chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .lf-chip {
-    border: 1.5px solid ${C.line}; background: #fff; cursor: pointer; font-family: inherit;
-    font-size: 12.5px; font-weight: 600; color: ${C.inkDeep};
-    padding: 8px 12px; border-radius: 20px;
+    border: 1.5px solid ${C.line}; background: ${C.white}; cursor: pointer; font-family: inherit;
+    font-size: 15px; font-weight: 600; color: ${C.inkDeep};
+    min-height: 44px; padding: 0 16px; border-radius: 8px;
   }
-  .lf-chip-on { border-color: ${C.ink}; background: #E7EFF2; color: ${C.ink}; }
+  .lf-chip-on { border-color: ${C.ink}; background: ${C.ink}; color: ${C.white}; }
 
   .lf-resume {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    font-size: 13px; color: ${C.inkSoft}; margin: 0 2px 10px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    font-size: 15px; color: ${C.inkSoft}; margin: 0 0 12px;
   }
   .lf-reset {
     background: none; border: none; cursor: pointer; font-family: inherit;
-    font-size: 13px; font-weight: 700; color: ${C.clay}; padding: 6px 0;
+    font-size: 15px; font-weight: 700; color: ${C.clay}; min-height: 44px; padding: 0 8px; text-decoration: underline;
   }
 
   /* ── Liste ── */
-  .empty { text-align: center; padding: 50px 20px; }
-  .empty-emoji { font-size: 44px; margin-bottom: 10px; }
-  .empty-title { font-size: 15px; font-weight: 700; color: ${C.inkSoft}; }
-
-  .liste { display: flex; flex-direction: column; gap: 10px; }
+  .liste { display: flex; flex-direction: column; gap: 12px; }
   .ligne-produit {
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 12px 16px 12px 12px;
-    display: grid; grid-template-columns: 56px 1fr auto auto auto; gap: 14px; align-items: center;
+    background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 12px;
+    display: grid; grid-template-columns: 64px 1fr auto auto auto; gap: 16px; align-items: center;
   }
-  .ligne-inactive { opacity: 0.55; }
+  .ligne-inactive { background: ${C.bgGrey}; }
+  .ligne-inactive .lp-thumb, .ligne-inactive .lp-main { opacity: 0.6; }
 
   .lp-thumb {
-    width: 56px; height: 56px; border-radius: 10px; overflow: hidden;
+    width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .lp-main { min-width: 0; }
-  .lp-nom { font-size: 14.5px; font-weight: 700; color: ${C.inkDeep}; }
-  .lp-meta { font-size: 12px; color: ${C.inkSoft}; margin-top: 3px; }
-  .lp-gros { color: ${C.goldDeep}; font-weight: 600; }
-  .lp-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; font-size: 11.5px; font-weight: 600; }
-  .lp-vendus { color: ${C.leaf}; }
+  .lp-nom { font-size: 16px; font-weight: 700; color: ${C.inkDeep}; overflow-wrap: anywhere; }
+  .lp-meta { font-size: 14px; color: ${C.inkSoft}; margin-top: 4px; }
+  .lp-gros { color: ${C.ink}; font-weight: 600; }
+  .lp-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; font-size: 14px; font-weight: 600; }
+  .lp-vendus { color: #2c6e4d; }
   .lp-zero { color: ${C.inkSoft}; }
   .lp-sans-photo { color: ${C.clay}; }
 
   .lp-prix { text-align: right; white-space: nowrap; }
-  .lp-prix b { font-size: 14px; color: ${C.inkDeep}; }
-  .lp-prix-gros { display: block; font-size: 11px; color: ${C.inkSoft}; margin-top: 2px; }
+  .lp-prix b { font-size: 16px; color: ${C.clay}; }
+  .lp-prix-gros { display: block; font-size: 14px; color: ${C.inkSoft}; margin-top: 2px; }
 
   .lp-statut {
-    border: none; cursor: pointer; padding: 7px 12px; border-radius: 20px;
-    font-size: 11.5px; font-weight: 700; font-family: inherit; white-space: nowrap;
+    border: none; cursor: pointer; min-height: 44px; padding: 0 16px; border-radius: 8px;
+    font-size: 15px; font-weight: 700; font-family: inherit; white-space: nowrap;
   }
-  .statut-on { background: #E8F5EE; color: ${C.leaf}; }
-  .statut-off { background: #F2F3F5; color: ${C.inkSoft}; }
+  .statut-on { background: #e6f3ec; color: #2c6e4d; }
+  .statut-off { background: ${C.line}; color: ${C.inkDeep}; }
 
-  .lp-actions { display: flex; gap: 6px; }
+  .lp-actions { display: flex; gap: 8px; }
   .lp-btn {
-    background: ${C.sand}; border: none; cursor: pointer; padding: 8px 12px;
-    border-radius: 8px; font-size: 12.5px; font-weight: 600; color: ${C.inkDeep}; font-family: inherit;
-    white-space: nowrap;
+    background: ${C.white}; border: 1.5px solid ${C.line}; cursor: pointer; min-height: 44px; min-width: 44px; padding: 0 12px;
+    border-radius: 8px; font-size: 15px; font-weight: 600; color: ${C.inkDeep}; font-family: inherit;
+    white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   }
+  .lp-btn:hover { border-color: ${C.inkSoft}; }
   .lp-btn-danger { color: ${C.clay}; }
-  .lp-btn-danger:hover { background: #FDECEB; }
+  .lp-btn-danger:hover { background: #fbf0ee; border-color: #e9c9c4; }
 
   @media (min-width: 800px) {
     .lf-segment { flex: 0 0 auto; }
   }
 
   @media (max-width: 700px) {
-    .ligne-produit { grid-template-columns: 56px 1fr; }
+    .ligne-produit { grid-template-columns: 64px 1fr; }
     .lp-prix, .lp-statut, .lp-actions { grid-column: 1 / -1; }
     .lp-prix { text-align: left; }
     .lp-statut { justify-self: start; }

@@ -7,13 +7,8 @@
 */
 
 import { STATUTS_ENVOI, referenceEnvoi, formatDateCourte, estEnRetard } from '@/lib/envois'
-import { flagPour } from '@/lib/produit'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  line: '#E4DED2', clay: '#C2574A',
-}
-
+import { C } from '@/lib/theme'
 export default function CarteEnvoi({ envoi, nbProduits, nbPieces, onOuvrir, libelleAction = 'Voir' }) {
   const statut = STATUTS_ENVOI[envoi.statut] || STATUTS_ENVOI.brouillon
   const retard = estEnRetard(envoi)
@@ -35,7 +30,7 @@ export default function CarteEnvoi({ envoi, nbProduits, nbPieces, onOuvrir, libe
       </span>
 
       <span className="ce-ligne">
-        {flagPour(envoi.pays_origine)}
+        Origine : {envoi.pays_origine}
         {envoi.transporteur && ` · ${envoi.transporteur}`}
         {envoi.numero_suivi && ` · n° ${envoi.numero_suivi}`}
       </span>
@@ -52,7 +47,7 @@ export default function CarteEnvoi({ envoi, nbProduits, nbPieces, onOuvrir, libe
 const css = `
   .ce-carte {
     display: flex; flex-direction: column; align-items: flex-start; gap: 5px; width: 100%;
-    background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 14px 16px;
+    background: #fff; border: 1px solid ${C.line}; border-radius: 12px; padding: 14px 16px;
     margin-bottom: 10px; cursor: pointer; text-align: left; font-family: inherit; color: ${C.inkDeep};
     position: relative;
   }
@@ -60,10 +55,10 @@ const css = `
   .ce-retard { border-left: 4px solid ${C.clay}; }
   .ce-haut { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
   .ce-ref { font-size: 15px; font-weight: 800; letter-spacing: 0.3px; }
-  .ce-ligne { font-size: 13px; color: ${C.inkDeep}; }
+  .ce-ligne { font-size: 14px; color: ${C.inkDeep}; }
   .ce-fort { font-weight: 700; }
-  .ce-doux { color: ${C.inkSoft}; font-size: 12.5px; }
+  .ce-doux { color: ${C.inkSoft}; font-size: 13px; }
   .ce-action {
-    align-self: flex-end; margin-top: 4px; font-size: 13px; font-weight: 800; color: ${C.ink};
+    align-self: flex-end; margin-top: 4px; font-size: 14px; font-weight: 800; color: ${C.ink};
   }
 `
