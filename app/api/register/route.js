@@ -38,7 +38,9 @@ export async function POST(request) {
 
     // 3. Identité : celle du jeton, jamais celle du corps
     const id = user.id
-    const telephone = user.phone ? (user.phone.startsWith('+') ? user.phone : `+${user.phone}`) : null
+    // Le téléphone est obligatoire en base : on le vérifie AVANT toute écriture
+    if (!user.phone) return erreur('Un numéro de téléphone est nécessaire pour créer ton compte.')
+    const telephone = user.phone.startsWith('+') ? user.phone : `+${user.phone}`
 
     // 4. Validation des champs
     const corps = await request.json().catch(() => ({}))
