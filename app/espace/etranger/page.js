@@ -259,7 +259,12 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
   const changerInfo = (cle, valeur) => setInfos({ ...infos, [cle]: valeur })
 
   /* ── Recherche de produits à ajouter ── */
-  const dejaAjoutes = new Set(lignes.map((l) => l.produit_id))
+  // Un même produit "hors commande" ne peut figurer qu'une fois par envoi (la base refuse sinon).
+  // Les lignes de commande, elles, peuvent répéter un produit : elles ne comptent pas ici.
+  const dejaAjoutes = new Set(lignes.filter((l) => !l.commande_item_id).map((l) => l.produit_id))
+  const indexExistant = lignes.findIndex(
+    (l) => !l.commande_item_id && normaliserTexte(produitParId[l.produit_id]?.nom).includes(normaliserTexte(recherche))
+  )
   const resultats = recherche.trim()
     ? produits
         .filter((p) => !dejaAjoutes.has(p.id) && normaliserTexte(p.nom).includes(normaliserTexte(recherche)))
@@ -530,7 +535,16 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
               ))}
             </ul>
           )}
-          {rechercheDejaDansEnvoi && <p className="ed-info">Ce produit est déjà dans l'envoi : change plutôt sa quantité.</p>}
+          {rechercheDejaDansEnvoi && (
+            <p className="ed-info">
+              Ce produit est déjà dans l&apos;envoi (hors commande).{' '}
+              {indexExistant >= 0 && (
+                <button onClick={() => { ajusterQuantite(indexExistant, 1); setRecherche('') }} className="btn-secondary">
+                  + 1 sur la ligne existante
+                </button>
+              )}
+            </p>
+          )}
           {recherche.trim() && resultats.length === 0 && !rechercheDejaDansEnvoi && (
             <p className="ed-info">Aucun produit trouvé. S'il n'existe pas encore, demande à l'admin de le créer.</p>
           )}
