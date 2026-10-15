@@ -7,11 +7,14 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import BarreNavMobile from '@/components/BarreNavMobile'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
+import { Squelette } from '@/components/ui/Squelette'
+import { Heart, Check, Minus, Plus, Truck, Banknote, PackageX } from 'lucide-react'
 import { ajouterAuPanier } from '@/lib/cart'
-import { flagPour, formatKMF } from '@/lib/produit'
-
+import { formatKMF } from '@/lib/produit'
 import { C } from '@/lib/theme'
-/* ─────────── Palette (identique au catalogue) ─────────── */
+
 export default function FicheProduit() {
   const { id } = useParams()
   const supabase = createClient()
@@ -85,7 +88,20 @@ export default function FicheProduit() {
     return (
       <div className="app">
         <style>{css}</style>
-        <div className="state">Chargement du produit…</div>
+        <Header />
+        <div className="wrap" role="status" aria-busy="true">
+          <span className="visually-hidden">Chargement du produit…</span>
+          <div className="product-layout">
+            <Squelette hauteur="auto" rayon={12} style={{ aspectRatio: '1' }} />
+            <div className="sk-infos">
+              <Squelette largeur="30%" hauteur={14} />
+              <Squelette largeur="80%" hauteur={28} />
+              <Squelette largeur="40%" hauteur={32} />
+              <Squelette hauteur={80} />
+              <Squelette hauteur={52} />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -94,11 +110,13 @@ export default function FicheProduit() {
     return (
       <div className="app">
         <style>{css}</style>
-        <div className="state">
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>😕</div>
-          <div>Ce produit n'existe pas ou n'est plus disponible.</div>
-          <a href="/" className="back-link">← Retour au catalogue</a>
-        </div>
+        <Header />
+        <EtatVide
+          icone={PackageX}
+          texte="Ce produit n'existe pas ou n'est plus disponible."
+          action={{ label: 'Retour au catalogue', href: '/' }}
+        />
+        <BarreNavMobile />
       </div>
     )
   }
@@ -129,7 +147,7 @@ export default function FicheProduit() {
                 emojiSize={120}
                 eager
               />
-              {produit.prix_gros && <span className="visual-badge">GROS DISPO</span>}
+              {produit.prix_gros && <span className="visual-badge">Prix de gros</span>}
             </div>
 
             {/* Les miniatures n'apparaissent que s'il y a plusieurs photos */}
@@ -152,7 +170,7 @@ export default function FicheProduit() {
 
           {/* ── Infos ── */}
           <div className="info-col">
-            <div className="info-origin">{flagPour(produit.origine)}</div>
+            {produit.origine && <div className="info-origin">Origine : {produit.origine}</div>}
             <h1 className="info-title">{produit.nom}</h1>
 
             <div className="info-price-row">
@@ -242,9 +260,9 @@ export default function FicheProduit() {
                     {mode === 'lot' ? `Combien de lots de ${tailleLot} ?` : 'Combien de pièces ?'}
                   </div>
                   <div className="qty-row">
-                    <button onClick={() => setQuantite((q) => Math.max(1, q - 1))} className="qty-btn" aria-label="Diminuer la quantité">−</button>
+                    <button onClick={() => setQuantite((q) => Math.max(1, q - 1))} className="qty-btn" aria-label="Diminuer la quantité"><Icone icone={Minus} /></button>
                     <span className="qty-value" aria-live="polite">{quantite}</span>
-                    <button onClick={() => setQuantite((q) => q + 1)} className="qty-btn" aria-label="Augmenter la quantité">+</button>
+                    <button onClick={() => setQuantite((q) => q + 1)} className="qty-btn" aria-label="Augmenter la quantité"><Icone icone={Plus} /></button>
                   </div>
                   {mode === 'lot' && (
                     <p className="qty-hint">
@@ -257,9 +275,9 @@ export default function FicheProduit() {
               <div className="option-block">
                 <div className="option-label">Quantité</div>
                 <div className="qty-row">
-                  <button onClick={() => setQuantite((q) => Math.max(1, q - 1))} className="qty-btn" aria-label="Diminuer la quantité">−</button>
+                  <button onClick={() => setQuantite((q) => Math.max(1, q - 1))} className="qty-btn" aria-label="Diminuer la quantité"><Icone icone={Minus} /></button>
                   <span className="qty-value" aria-live="polite">{quantite}</span>
-                  <button onClick={() => setQuantite((q) => q + 1)} className="qty-btn" aria-label="Augmenter la quantité">+</button>
+                  <button onClick={() => setQuantite((q) => q + 1)} className="qty-btn" aria-label="Augmenter la quantité"><Icone icone={Plus} /></button>
                 </div>
               </div>
             )}
@@ -273,24 +291,23 @@ export default function FicheProduit() {
               <div className="cta-row">
                 <button onClick={() => setFavori(!favori)} className="fav-btn"
                   aria-pressed={favori} aria-label={favori ? 'Retirer des favoris' : 'Ajouter aux favoris'}>
-                  {favori ? '❤️' : '🤍'}
+                  <Icone icone={Heart} taille={24} fill={favori ? C.clay : 'none'} color={favori ? C.clay : C.inkDeep} />
                 </button>
                 <button onClick={ajouterPanier} className={`add-btn ${ajoute ? 'add-btn-done' : ''}`}>
-                  {ajoute ? '✓ Ajouté au panier' : '🛒 Ajouter au panier'}
+                  {ajoute ? <><Icone icone={Check} /> Ajouté au panier</> : 'Ajouter au panier'}
                 </button>
               </div>
               {!user && (
                 <p className="guest-note">
-                  💡 Tu peux commander sans compte — la connexion est demandée seulement pour valider ta commande.
+                  Tu peux commander sans compte : la connexion est demandée seulement pour valider ta commande.
                 </p>
               )}
             </div>
 
             {/* Réassurance */}
             <div className="mini-trust">
-              <div>🚚 <b>Livraison</b> Grande Comore · Anjouan · Mohéli</div>
-              <div>💵 <b>Paiement à la livraison</b> disponible</div>
-              <div>💬 <b>Une question ?</b> Contacte-nous sur WhatsApp</div>
+              <div><Icone icone={Truck} /> <span><b>Livraison</b> Grande Comore, Anjouan, Mohéli</span></div>
+              <div><Icone icone={Banknote} /> <span><b>Paiement à la livraison</b></span></div>
             </div>
           </div>
         </div>
@@ -313,127 +330,118 @@ const css = `
   .app {
     background: ${C.bgGrey}; min-height: 100vh;
     font-family: var(--font-jakarta), system-ui, sans-serif;
-    color: ${C.inkDeep}; padding-bottom: 70px;
+    color: ${C.inkDeep}; padding-bottom: 72px;
   }
 
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
-  .breadcrumb { font-size: 12.5px; color: ${C.inkSoft}; margin-bottom: 20px; }
-  .breadcrumb a { color: ${C.inkSoft}; text-decoration: none; }
-  .breadcrumb span { margin: 0 4px; }
-  .breadcrumb-current { color: ${C.inkDeep}; font-weight: 600; }
+  .breadcrumb { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .breadcrumb a { color: ${C.inkSoft}; display: inline-flex; align-items: center; min-height: 32px; }
+  .breadcrumb-current { color: ${C.inkDeep}; font-weight: 600; overflow-wrap: anywhere; }
 
-  .product-layout { display: grid; grid-template-columns: 1fr; gap: 30px; }
+  .product-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .sk-infos { display: flex; flex-direction: column; gap: 12px; }
 
   /* ── Visuel ── */
   .visual-frame {
-    width: 100%; aspect-ratio: 1; background: #fff; border: 1px solid ${C.line};
-    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    width: 100%; aspect-ratio: 1; background: ${C.sand}; border: 1px solid ${C.line};
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
     position: relative; overflow: hidden;
   }
   .visual-badge {
-    position: absolute; top: 16px; left: 16px; background: ${C.leaf}; color: #fff;
-    font-size: 11px; font-weight: 800; letter-spacing: 0.5px; padding: 6px 12px; border-radius: 8px;
+    position: absolute; top: 12px; left: 12px; background: ${C.white}; color: ${C.ink};
+    font-size: 13px; font-weight: 700; padding: 4px 8px; border-radius: 6px;
   }
 
   /* Miniatures : défilent horizontalement sur mobile si besoin */
-  .thumbs { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .thumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding-bottom: 4px; }
   .thumb {
-    flex: 0 0 68px; width: 68px; height: 68px; padding: 0; cursor: pointer;
-    border-radius: 10px; overflow: hidden; background: #fff;
-    border: 2px solid ${C.line}; opacity: 0.7; transition: opacity .15s, border-color .15s;
+    flex: 0 0 64px; width: 64px; height: 64px; padding: 0; cursor: pointer;
+    border-radius: 8px; overflow: hidden; background: ${C.white};
+    border: 2px solid ${C.line}; opacity: 0.75;
   }
   .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .thumb:hover { opacity: 1; }
   .thumb-on { border-color: ${C.ink}; opacity: 1; }
-  .thumb:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
 
   /* ── Infos ── */
-  .info-col { display: flex; flex-direction: column; }
-  .info-origin { font-size: 13px; color: ${C.inkSoft}; margin-bottom: 8px; }
-  .info-title { font-size: 24px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 14px; line-height: 1.25; }
+  .info-col { display: flex; flex-direction: column; min-width: 0; }
+  .info-origin { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 8px; }
+  .info-title { font-size: 24px; font-weight: 800; color: ${C.inkDeep}; margin: 0 0 12px; line-height: 1.25; overflow-wrap: anywhere; }
 
   .info-price-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
   .info-price { font-size: 32px; font-weight: 800; color: ${C.clay}; }
-  .info-currency { font-size: 15px; font-weight: 600; color: ${C.inkSoft}; }
-  .info-gros-active {
-    font-size: 12px; font-weight: 700; color: ${C.leaf}; background: #E8F5EE;
-    padding: 5px 10px; border-radius: 7px;
-  }
+  .info-currency { font-size: 16px; font-weight: 600; color: ${C.inkSoft}; }
+  .info-gros-active { font-size: 14px; font-weight: 700; color: ${C.leaf}; }
 
-  .info-desc { font-size: 14.5px; line-height: 1.65; color: ${C.inkSoft}; margin: 0 0 22px; }
+  .info-desc { font-size: 16px; line-height: 1.6; color: ${C.inkDeep}; margin: 0 0 24px; }
 
-  .option-block { margin-bottom: 20px; }
-  .option-label { font-size: 13px; font-weight: 700; color: ${C.inkDeep}; margin-bottom: 10px; }
+  .option-block { margin-bottom: 24px; }
+  .option-label { font-size: 15px; font-weight: 700; color: ${C.inkDeep}; margin-bottom: 8px; }
   .option-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .option-btn {
-    padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
-    background: #fff; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; cursor: pointer; font-family: inherit;
+    min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 8px; font-size: 15px; font-weight: 600;
+    background: ${C.white}; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; cursor: pointer; font-family: inherit;
   }
-  .option-on { border-color: ${C.ink}; background: ${C.ink}; color: #fff; }
+  .option-btn:hover { border-color: ${C.inkSoft}; }
+  .option-on { border-color: ${C.ink}; background: ${C.ink}; color: ${C.white}; }
 
-  .qty-row { display: flex; align-items: center; gap: 0; width: fit-content; border: 1.5px solid ${C.line}; border-radius: 10px; overflow: hidden; }
+  .qty-row { display: flex; align-items: center; width: fit-content; border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden; background: ${C.white}; }
   .qty-btn {
-    width: 44px; height: 44px; border: none; background: ${C.sand}; cursor: pointer;
-    font-size: 18px; font-weight: 700; color: ${C.inkDeep};
+    width: 48px; height: 48px; border: none; background: ${C.sand}; cursor: pointer; color: ${C.inkDeep};
+    display: flex; align-items: center; justify-content: center;
   }
-  .qty-value { width: 52px; text-align: center; font-size: 16px; font-weight: 700; color: ${C.inkDeep}; }
+  .qty-btn:hover { background: ${C.line}; }
+  .qty-value { width: 56px; text-align: center; font-size: 16px; font-weight: 700; color: ${C.inkDeep}; }
 
   .mode-row { display: flex; gap: 12px; flex-wrap: wrap; }
   .mode-card {
-    flex: 1; min-width: 160px; text-align: left; cursor: pointer; font-family: inherit;
-    background: #fff; border: 2px solid ${C.line}; border-radius: 12px; padding: 16px;
-    display: flex; flex-direction: column; gap: 3px;
+    flex: 1; min-width: 150px; text-align: left; cursor: pointer; font-family: inherit;
+    background: ${C.white}; border: 1.5px solid ${C.line}; border-radius: 8px; padding: 12px 16px;
+    display: flex; flex-direction: column; gap: 4px; min-height: 44px;
   }
-  .mode-card-name { font-size: 14px; font-weight: 700; color: ${C.inkDeep}; }
-  .mode-card-desc { font-size: 12.5px; color: ${C.inkSoft}; margin-bottom: 6px; }
+  .mode-card-name { font-size: 15px; font-weight: 700; color: ${C.inkDeep}; }
+  .mode-card-desc { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 4px; }
   .mode-card-price { font-size: 18px; font-weight: 800; color: ${C.inkSoft}; }
-  .mode-card-price i { font-size: 11px; font-weight: 500; font-style: normal; }
-  .mode-card-on { border-color: ${C.gold}; background: #FFFBF2; }
+  .mode-card-price i { font-size: 13px; font-weight: 500; font-style: normal; }
+  .mode-card-on { border-color: ${C.ink}; box-shadow: inset 0 0 0 1px ${C.ink}; }
   .mode-card-on .mode-card-price { color: ${C.clay}; }
 
-  .price-note { font-size: 12.5px; color: ${C.inkSoft}; margin: -8px 0 18px; line-height: 1.5; }
-  .qty-hint { font-size: 12.5px; color: ${C.leaf}; font-weight: 600; margin: 10px 0 0; }
+  .price-note { font-size: 14px; color: ${C.inkSoft}; margin: -8px 0 16px; line-height: 1.5; }
+  .qty-hint { font-size: 14px; color: ${C.leaf}; font-weight: 600; margin: 8px 0 0; }
 
-  .cta-box { background: #fff; border: 1px solid ${C.line}; border-radius: 14px; padding: 18px; margin-bottom: 20px; }
-  .cta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
-  .cta-total span { font-size: 13px; color: ${C.inkSoft}; font-weight: 600; }
+  .cta-box { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+  .cta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .cta-total span { font-size: 15px; color: ${C.inkSoft}; font-weight: 600; }
   .cta-total b { font-size: 22px; font-weight: 800; color: ${C.inkDeep}; }
-  .cta-row { display: flex; gap: 10px; }
+  .cta-row { display: flex; gap: 8px; }
   .fav-btn {
-    width: 52px; height: 52px; border-radius: 10px; border: 1.5px solid ${C.line};
-    background: #fff; cursor: pointer; font-size: 20px; flex-shrink: 0;
+    width: 52px; height: 52px; border-radius: 8px; border: 1.5px solid ${C.line};
+    background: ${C.white}; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
   }
+  .fav-btn:hover { border-color: ${C.inkSoft}; }
   .add-btn {
-    flex: 1; height: 52px; border: none; border-radius: 10px; cursor: pointer;
-    background: ${C.gold}; color: ${C.inkDeep}; font-size: 15px; font-weight: 800; font-family: inherit;
-    transition: background .15s;
+    flex: 1; min-height: 52px; border: none; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: ${C.gold}; color: ${C.inkDeep}; font-size: 16px; font-weight: 800; font-family: inherit;
   }
   .add-btn:hover { background: ${C.goldDeep}; }
-  .add-btn-done { background: ${C.leaf}; color: #fff; }
-  .guest-note { font-size: 12px; color: ${C.inkSoft}; margin: 12px 0 0; line-height: 1.5; }
+  .add-btn-done { background: ${C.leaf}; color: ${C.white}; }
+  .add-btn-done:hover { background: ${C.leaf}; }
+  .guest-note { font-size: 14px; color: ${C.inkSoft}; margin: 12px 0 0; line-height: 1.5; }
 
-  .mini-trust { display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; color: ${C.inkSoft}; }
+  .mini-trust { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: ${C.inkSoft}; }
+  .mini-trust > div { display: flex; align-items: center; gap: 8px; color: ${C.ink}; }
+  .mini-trust span { color: ${C.inkSoft}; }
   .mini-trust b { color: ${C.inkDeep}; }
-
-  .state { text-align: center; padding: 100px 20px; color: ${C.inkSoft}; font-size: 15px; }
-  .back-link { display: inline-block; margin-top: 14px; color: ${C.ink}; font-weight: 700; text-decoration: none; }
-
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
-    border-top: 1px solid ${C.line}; display: flex; padding: 9px 0 14px; z-index: 40;
-  }
-  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; text-decoration: none; }
-  .nav-icon { font-size: 19px; opacity: 0.4; }
-  .nav-label { font-size: 10px; font-weight: 600; color: #A9B4B9; }
 
   /* ═══════════ RESPONSIVE ═══════════ */
   @media (min-width: 800px) {
     .product-layout { grid-template-columns: 1fr 1fr; gap: 48px; }
-    .bottom-nav { display: none; }
-    .app { padding-bottom: 0; }
   }
   @media (min-width: 1000px) {
     .product-layout { grid-template-columns: 5fr 6fr; }
+    .app { padding-bottom: 0; }
   }
 `

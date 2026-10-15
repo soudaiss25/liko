@@ -16,9 +16,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
+import { Search, User, ShoppingCart } from 'lucide-react'
+import Icone from '@/components/ui/Icone'
 import { getPanierCount } from '@/lib/cart'
-
+import { WHATSAPP_SERVICE } from '@/lib/config'
 import { C } from '@/lib/theme'
+
 export default function Header({ search, onSearchChange }) {
   const supabase = createClient()
   const router = useRouter()
@@ -62,47 +65,55 @@ export default function Header({ search, onSearchChange }) {
     <>
       <style>{css}</style>
 
-      {/* ── Bandeau réassurance ── */}
+      {/* ── Bandeau d'information ── */}
       <div className="hd-topbar">
         <div className="hd-topbar-inner">
-          <span>🚚 Livraison sur les 3 îles</span>
+          <span>Livraison sur les 3 îles</span>
           <span className="hd-dot">·</span>
-          <span>💵 Paiement à la livraison</span>
-          <span className="hd-dot">·</span>
-          <span className="hd-topbar-wa">💬 Aide sur WhatsApp</span>
+          <span>Paiement à la livraison</span>
+          {WHATSAPP_SERVICE && (
+            <>
+              <span className="hd-dot">·</span>
+              <a href={`https://wa.me/${WHATSAPP_SERVICE}`} className="hd-topbar-wa">Aide sur WhatsApp</a>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── Header principal ── */}
       <header className="hd-header">
         <div className="hd-header-inner">
-          <a href="/" className="hd-brand">
-            <img src="/logo.png" alt="Salut" className="hd-brand-logo" />
+          <a href="/" className="hd-brand" aria-label="Salut, retour à l'accueil">
+            <img src="/logo.png" alt="" className="hd-brand-logo" />
             <span className="hd-brand-name">Salut</span>
           </a>
 
-          <form onSubmit={soumettreRecherche} className="hd-searchbar">
+          <form onSubmit={soumettreRecherche} className="hd-searchbar" role="search">
             <input
               className="hd-searchbar-input"
-              placeholder="Rechercher un produit, une marque…"
+              type="search"
+              aria-label="Rechercher un produit"
+              placeholder="Rechercher un produit"
               value={valeurRecherche}
               onChange={(e) => changerRecherche(e.target.value)}
             />
-            <button type="submit" className="hd-searchbar-btn">🔍 Rechercher</button>
+            <button type="submit" className="hd-searchbar-btn" aria-label="Rechercher">
+              <Icone icone={Search} />
+            </button>
           </form>
 
           <div className="hd-actions">
             {estConnecte ? (
-              <a href="/commandes" className="hd-action">
-                <span className="hd-action-ico">👤</span>
+              <a href="/commandes" className="hd-action" aria-label={`Mon compte : ${prenom || 'mes commandes'}`}>
+                <Icone icone={User} taille={24} />
                 <span className="hd-action-txt">
                   <small>Bonjour</small>
                   <b>{prenom || 'Mon compte'}</b>
                 </span>
               </a>
             ) : (
-              <a href="/login" className="hd-action">
-                <span className="hd-action-ico">👤</span>
+              <a href="/login" className="hd-action" aria-label="Se connecter">
+                <Icone icone={User} taille={24} />
                 <span className="hd-action-txt">
                   <small>Bienvenue</small>
                   <b>Se connecter</b>
@@ -110,8 +121,8 @@ export default function Header({ search, onSearchChange }) {
               </a>
             )}
 
-            <a href="/panier" className="hd-action">
-              <span className="hd-action-ico">🛒</span>
+            <a href="/panier" className="hd-action" aria-label={`Panier : ${nbPanier} article${nbPanier > 1 ? 's' : ''}`}>
+              <Icone icone={ShoppingCart} taille={24} />
               {nbPanier > 0 && <span className="hd-cart-badge">{nbPanier}</span>}
               <span className="hd-action-txt">
                 <small>Panier</small>
@@ -122,14 +133,18 @@ export default function Header({ search, onSearchChange }) {
         </div>
 
         {/* Recherche mobile */}
-        <form onSubmit={soumettreRecherche} className="hd-searchbar-mobile">
+        <form onSubmit={soumettreRecherche} className="hd-searchbar-mobile" role="search">
           <input
             className="hd-searchbar-input"
-            placeholder="Rechercher un produit…"
+            type="search"
+            aria-label="Rechercher un produit"
+            placeholder="Rechercher un produit"
             value={valeurRecherche}
             onChange={(e) => changerRecherche(e.target.value)}
           />
-          <button type="submit" className="hd-searchbar-btn">🔍</button>
+          <button type="submit" className="hd-searchbar-btn" aria-label="Rechercher">
+            <Icone icone={Search} />
+          </button>
         </form>
       </header>
     </>
@@ -137,68 +152,66 @@ export default function Header({ search, onSearchChange }) {
 }
 
 const css = `
-  .hd-topbar { background: ${C.inkDeep}; color: #fff; font-size: 12px; }
+  .hd-topbar { background: ${C.inkDeep}; color: ${C.white}; font-size: 13px; }
   .hd-topbar-inner {
-    max-width: 1280px; margin: 0 auto; padding: 8px 20px;
-    display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
+    max-width: 1280px; margin: 0 auto; padding: 8px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
   }
-  .hd-dot { opacity: 0.4; }
-  .hd-topbar-wa { color: ${C.gold}; font-weight: 600; }
+  .hd-dot { opacity: 0.5; }
+  .hd-topbar-wa { color: ${C.white}; font-weight: 700; text-decoration: underline; }
 
-  .hd-header { background: #fff; border-bottom: 1px solid ${C.line}; position: sticky; top: 0; z-index: 30; }
+  .hd-header { background: ${C.white}; border-bottom: 1px solid ${C.line}; position: sticky; top: 0; z-index: 30; }
   .hd-header-inner {
-    max-width: 1280px; margin: 0 auto; padding: 14px 20px;
-    display: flex; align-items: center; gap: 22px;
+    max-width: 1280px; margin: 0 auto; padding: 8px 16px;
+    display: flex; align-items: center; gap: 16px;
   }
-  .hd-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-  .hd-brand-logo { width: 92px; height: 92px; object-fit: contain; }
-  .hd-brand-name { font-size: 33px; font-weight: 800; color: ${C.ink}; letter-spacing: -0.4px; }
+  .hd-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0; min-height: 44px; }
+  .hd-brand-logo { width: 44px; height: 44px; object-fit: contain; }
+  .hd-brand-name { font-size: 24px; font-weight: 800; color: ${C.ink}; }
 
   .hd-searchbar {
-    flex: 1; display: none; align-items: center; background: #fff;
-    border: 1.5px solid ${C.ink}; border-radius: 8px; overflow: hidden;
-    height: 46px; max-width: 640px; transition: border-color .15s, box-shadow .15s;
+    flex: 1; display: none; align-items: center; background: ${C.white};
+    border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden;
+    height: 44px; max-width: 640px;
   }
-  .hd-searchbar:focus-within { border-color: ${C.gold}; box-shadow: 0 0 0 3px rgba(232,160,32,0.15); }
+  .hd-searchbar:focus-within { border-color: ${C.ink}; }
   .hd-searchbar-input {
-    flex: 1; border: none; outline: none; height: 100%; padding: 0 16px;
-    font-size: 15px; font-family: inherit; color: ${C.inkDeep};
+    flex: 1; min-width: 0; border: none; outline: none; height: 100%; padding: 0 16px;
+    font-size: 16px; font-family: inherit; color: ${C.inkDeep}; background: transparent;
   }
-  .hd-searchbar-input::placeholder { color: #9AA7AE; }
+  .hd-searchbar-input::placeholder { color: ${C.inkSoft}; }
   .hd-searchbar-btn {
-    border: none; cursor: pointer; height: 100%; padding: 0 20px;
-    background: ${C.gold}; color: ${C.inkDeep}; font-weight: 700; font-size: 14px;
-    font-family: inherit; white-space: nowrap;
+    border: none; cursor: pointer; height: 100%; width: 48px; flex-shrink: 0;
+    background: ${C.ink}; color: ${C.white}; display: flex; align-items: center; justify-content: center;
   }
-  .hd-searchbar-btn:hover { background: ${C.goldDeep}; }
+  .hd-searchbar-btn:hover { background: ${C.inkDeep}; }
 
-  .hd-searchbar-mobile { display: flex; align-items: stretch; gap: 0; padding: 0 16px 12px; }
-  .hd-searchbar-mobile .hd-searchbar-input {
-    background: #fff; border: 1.5px solid ${C.ink}; border-right: none;
-    border-radius: 8px 0 0 8px; height: 44px;
+  .hd-searchbar-mobile {
+    display: flex; align-items: stretch; margin: 0 16px 8px; height: 44px;
+    border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden;
   }
-  .hd-searchbar-mobile .hd-searchbar-btn { border-radius: 0 8px 8px 0; height: 44px; padding: 0 16px; }
+  .hd-searchbar-mobile:focus-within { border-color: ${C.ink}; }
 
-  .hd-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+  .hd-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex-shrink: 0; }
   .hd-action {
-    display: flex; align-items: center; gap: 10px; text-decoration: none;
-    color: ${C.inkDeep}; padding: 9px 14px; border-radius: 10px; position: relative;
-    transition: background .15s;
+    display: flex; align-items: center; gap: 8px; text-decoration: none;
+    color: ${C.inkDeep}; min-width: 44px; min-height: 44px; padding: 0 8px;
+    justify-content: center; border-radius: 8px; position: relative;
   }
-  .hd-action:hover { background: ${C.sand}; }
-  .hd-action-ico { font-size: 30px; }
+  .hd-action:hover { background: ${C.bgGrey}; }
   .hd-action-txt { display: none; flex-direction: column; line-height: 1.25; }
-  .hd-action-txt small { font-size: 13px; color: ${C.inkSoft}; }
-  .hd-action-txt b { font-size: 18px; font-weight: 700; color: ${C.inkDeep}; }
+  .hd-action-txt small { font-size: 12px; color: ${C.inkSoft}; }
+  .hd-action-txt b { font-size: 14px; font-weight: 700; color: ${C.inkDeep}; }
   .hd-cart-badge {
-    position: absolute; top: 2px; left: 24px; background: ${C.gold}; color: ${C.inkDeep};
-    font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; border-radius: 9px;
-    display: flex; align-items: center; justify-content: center; padding: 0 5px;
+    position: absolute; top: 2px; left: 24px; background: ${C.ink}; color: ${C.white};
+    font-size: 11px; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center; padding: 0 4px;
   }
 
   @media (min-width: 700px) {
     .hd-searchbar { display: flex; }
     .hd-searchbar-mobile { display: none; }
     .hd-action-txt { display: flex; }
+    .hd-action { padding: 0 12px; }
   }
 `

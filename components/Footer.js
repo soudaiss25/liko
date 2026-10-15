@@ -1,9 +1,12 @@
 /* ─────────── components/Footer.js ───────────
-   Footer partagé, à importer sur toutes les pages.
-   Les couleurs sont passées en variables CSS globales
-   (voir globals.css) pour ne pas dupliquer la palette
-   dans chaque fichier.
+   Footer partagé : uniquement des liens qui mènent à une vraie page.
 */
+
+import { MessageCircle } from 'lucide-react'
+import Icone from '@/components/ui/Icone'
+import { C } from '@/lib/theme'
+import { NOM_BOUTIQUE, WHATSAPP_SERVICE } from '@/lib/config'
+
 export default function Footer() {
   return (
     <footer className="site-footer">
@@ -11,20 +14,22 @@ export default function Footer() {
 
       <div className="footer-inner">
         <div className="footer-col footer-brand">
-          <img src="/logo.png" alt="Salut" className="footer-logo" />
+          <img src="/logo.png" alt={NOM_BOUTIQUE} className="footer-logo" />
           <p className="footer-tagline">
-            La marketplace des Comores. Le meilleur du monde, livré chez vous
-            et payé à la réception.
+            Des produits venus de Chine, livrés sur les 3 îles et payés à la réception.
           </p>
-          <a href="https://wa.me/" className="footer-wa">💬 Nous écrire sur WhatsApp</a>
+          {WHATSAPP_SERVICE && (
+            <a href={`https://wa.me/${WHATSAPP_SERVICE}`} className="footer-wa">
+              <Icone icone={MessageCircle} taille={18} /> Écrire sur WhatsApp
+            </a>
+          )}
         </div>
 
         <div className="footer-col">
-          <h4>Acheter</h4>
+          <h4>Boutique</h4>
           <a href="/">Tous les produits</a>
-          <a href="/">Nouveautés</a>
-          <a href="/">Achat en gros</a>
-          <a href="/">Meilleures ventes</a>
+          <a href="/panier">Mon panier</a>
+          <a href="/commandes">Suivre une commande</a>
         </div>
 
         <div className="footer-col">
@@ -32,65 +37,50 @@ export default function Footer() {
           <a href="/login">Se connecter</a>
           <a href="/register">Créer un compte</a>
           <a href="/commandes">Mes commandes</a>
-          <a href="/panier">Mon panier</a>
-        </div>
-
-        <div className="footer-col">
-          <h4>Aide</h4>
-          <a href="/">Suivre ma commande</a>
-          <a href="/">Livraison</a>
-          <a href="/">Retours</a>
-          <a href="/">Nous contacter</a>
         </div>
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} Salut Marketplace — Comores</span>
-        <span className="footer-legal">
-          <a href="/">Conditions</a> · <a href="/">Confidentialité</a>
-        </span>
+        <span>© {new Date().getFullYear()} {NOM_BOUTIQUE}</span>
       </div>
     </footer>
   )
 }
 
 const css = `
-  .site-footer { background: #143A4B; color: #fff; }
+  .site-footer { background: ${C.inkDeep}; color: ${C.white}; }
   .footer-inner {
-    max-width: 1280px; margin: 0 auto; padding: 40px 20px 30px;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 30px;
+    max-width: 1280px; margin: 0 auto; padding: 32px 16px 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
   }
   .footer-brand { grid-column: 1 / -1; }
   .footer-logo {
-    width: 54px; height: 54px; object-fit: contain;
-    background: #fff; border-radius: 10px; padding: 4px; margin-bottom: 12px;
+    width: 48px; height: 48px; object-fit: contain;
+    background: ${C.white}; border-radius: 8px; padding: 4px; margin-bottom: 12px;
   }
   .footer-tagline {
-    font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.6);
-    max-width: 340px; margin: 0 0 14px;
+    font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.75);
+    max-width: 340px; margin: 0 0 16px;
   }
   .footer-wa {
-    display: inline-block; background: #3E9268; color: #fff; text-decoration: none;
-    padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+    border: 1.5px solid rgba(255,255,255,0.4); color: ${C.white}; text-decoration: none;
+    padding: 0 16px; border-radius: 8px; font-size: 14px; font-weight: 700;
   }
-  .footer-col h4 {
-    font-size: 13px; font-weight: 700; margin: 0 0 14px; color: #fff; letter-spacing: 0.3px;
-  }
+  .footer-wa:hover { border-color: ${C.white}; }
+  .footer-col h4 { font-size: 14px; font-weight: 700; margin: 0 0 8px; color: ${C.white}; }
   .footer-col a {
-    display: block; font-size: 13px; color: rgba(255,255,255,0.6);
-    text-decoration: none; margin-bottom: 10px; transition: color .15s;
+    display: block; font-size: 14px; color: rgba(255,255,255,0.75);
+    text-decoration: none; padding: 8px 0;
   }
-  .footer-col a:hover { color: #E8A020; }
+  .footer-col a:hover { color: ${C.white}; text-decoration: underline; }
   .footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.1); max-width: 1280px; margin: 0 auto;
-    padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
-    font-size: 12px; color: rgba(255,255,255,0.5); flex-wrap: wrap; gap: 8px;
+    border-top: 1px solid rgba(255,255,255,0.15); max-width: 1280px; margin: 0 auto;
+    padding: 16px; font-size: 13px; color: rgba(255,255,255,0.7);
   }
-  .footer-legal a { color: rgba(255,255,255,0.5); text-decoration: none; }
-  .footer-legal a:hover { color: #E8A020; }
 
   @media (min-width: 700px) {
-    .footer-inner { grid-template-columns: 2fr 1fr 1fr 1fr; }
+    .footer-inner { grid-template-columns: 2fr 1fr 1fr; }
     .footer-brand { grid-column: auto; }
   }
 `

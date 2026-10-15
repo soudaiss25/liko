@@ -15,7 +15,11 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { getPanier, viderPanier, retirerDuPanier } from '@/lib/cart'
+import { Check, ArrowLeft, ShoppingCart } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
+import Icone from '@/components/ui/Icone'
+import EtatVide from '@/components/ui/EtatVide'
+import { ChargementListe } from '@/components/ui/Squelette'
 import { formatKMF } from '@/lib/produit'
 import {
   ILES, INDICATIFS, referenceCommande, lienSuivi, lienWhatsApp,
@@ -185,7 +189,7 @@ export default function PageCommande() {
         <style>{css}</style>
         <BarreTunnel />
         <main className="cm-merci">
-          <div className="cm-merci-icone" aria-hidden="true">✓</div>
+          <div className="cm-merci-icone" aria-hidden="true"><Icone icone={Check} taille={32} /></div>
           <h1>Merci {confirmation.prenom}, ta commande est reçue</h1>
           <p className="cm-merci-ref">{referenceCommande(confirmation.numero)} · {formatKMF(confirmation.montant_total)} KMF à payer à la livraison</p>
 
@@ -202,8 +206,8 @@ export default function PageCommande() {
             <p className="cm-aide">Garde-le : il te permet de suivre ta commande à tout moment, sans compte.</p>
             <div className="cm-lien">{lien}</div>
             <div className="cm-actions-lien">
-              <button onClick={copierLien} className="cm-btn-secondaire">{copie ? '✓ Lien copié' : 'Copier le lien'}</button>
-              <a className="cm-btn-whatsapp" target="_blank" rel="noopener noreferrer"
+              <button onClick={copierLien} className="cm-btn-secondaire">{copie ? <><Icone icone={Check} taille={18} /> Lien copié</> : 'Copier le lien'}</button>
+              <a className="cm-btn-secondaire" target="_blank" rel="noopener noreferrer"
                 href={lienWhatsApp(confirmation.telephone, `Mon suivi de commande ${referenceCommande(confirmation.numero)} : ${lien}`)}>
                 M'envoyer le lien sur WhatsApp
               </a>
@@ -221,18 +225,14 @@ export default function PageCommande() {
 
   /* ═══════════ CHARGEMENT / PANIER VIDE ═══════════ */
   if (chargement) {
-    return (<div className="cm-app"><style>{css}</style><BarreTunnel /><div className="cm-etat">Chargement de ta commande…</div></div>)
+    return (<div className="cm-app"><style>{css}</style><BarreTunnel /><div className="cm-etat"><ChargementListe nb={3} hauteur={96} /></div></div>)
   }
   if (panier.length === 0) {
     return (
       <div className="cm-app">
         <style>{css}</style>
         <BarreTunnel />
-        <div className="cm-etat">
-          <div className="cm-etat-emoji" aria-hidden="true">🛒</div>
-          <p>Ton panier est vide.</p>
-          <a href="/" className="cm-btn-principal">Voir le catalogue</a>
-        </div>
+        <EtatVide icone={ShoppingCart} texte="Ton panier est vide." action={{ label: 'Voir le catalogue', href: '/' }} />
       </div>
     )
   }
@@ -374,7 +374,7 @@ export default function PageCommande() {
           <section className="cm-bloc" aria-labelledby="t-paiement">
             <h2 id="t-paiement">Paiement</h2>
             <div className="cm-paiement">
-              <span className="cm-paiement-coche" aria-hidden="true">✓</span>
+              <span className="cm-paiement-coche" aria-hidden="true"><Icone icone={Check} taille={18} /></span>
               <div>
                 <b>Paiement à la livraison</b>
                 <span>En espèces, quand tu reçois ta commande. Rien à payer aujourd'hui.</span>
@@ -395,7 +395,7 @@ export default function PageCommande() {
             <button onClick={commander} disabled={envoi} className="cm-btn-principal cm-btn-commander">
               {envoi ? 'Envoi de ta commande…' : `Confirmer ma commande · ${formatKMF(total)} KMF`}
             </button>
-            <p className="cm-rassurance">🔒 Tes informations servent uniquement à ta livraison.</p>
+            <p className="cm-rassurance">Tes informations servent uniquement à ta livraison.</p>
           </div>
         </aside>
       </main>
@@ -409,7 +409,7 @@ export default function PageCommande() {
 function BarreTunnel() {
   return (
     <header className="cm-barre">
-      <a href="/panier" className="cm-retour" aria-label="Retour au panier">← Panier</a>
+      <a href="/panier" className="cm-retour" aria-label="Retour au panier"><Icone icone={ArrowLeft} taille={18} /> Panier</a>
       <a href="/" aria-label="Accueil Salut Marketplace"><img src="/logo.png" alt="Salut" className="cm-logo" /></a>
       <span className="cm-barre-droite">Paiement à la réception</span>
     </header>
@@ -441,37 +441,35 @@ const css = `
 
   /* ── Barre du tunnel ── */
   .cm-barre {
-    background: #fff; border-bottom: 1px solid ${C.line};
+    background: ${C.white}; border-bottom: 1px solid ${C.line};
     display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
     padding: 10px 16px; position: sticky; top: 0; z-index: 20;
   }
-  .cm-retour { font-size: 14px; font-weight: 700; color: ${C.ink}; text-decoration: none; padding: 8px 0; }
+  .cm-retour { font-size: 15px; font-weight: 700; color: ${C.ink}; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; gap: 4px; }
   .cm-logo { width: 38px; height: 38px; object-fit: contain; display: block; }
-  .cm-barre-droite { justify-self: end; font-size: 12px; font-weight: 600; color: ${C.leaf}; text-align: right; }
+  .cm-barre-droite { justify-self: end; font-size: 13px; font-weight: 600; color: ${C.inkSoft}; text-align: right; }
 
-  .cm-etat { text-align: center; padding: 80px 20px; color: ${C.inkSoft}; }
-  .cm-etat-emoji { font-size: 44px; margin-bottom: 8px; }
-  .cm-etat p { margin: 0 0 18px; font-size: 15px; }
+  .cm-etat { max-width: 560px; margin: 0 auto; padding: 24px 16px; }
 
   /* ── Grille : 1 colonne sur téléphone, 2 sur ordinateur ── */
   .cm-grille { max-width: 1040px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
-  .cm-titre { font-size: 23px; font-weight: 800; margin: 6px 0 4px; letter-spacing: -0.3px; }
-  .cm-sous-titre { font-size: 14px; color: ${C.inkSoft}; margin: 0 0 16px; }
+  .cm-titre { font-size: 24px; font-weight: 800; margin: 8px 0 4px; }
+  .cm-sous-titre { font-size: 15px; color: ${C.inkSoft}; margin: 0 0 16px; }
 
-  .cm-bloc { background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
-  .cm-bloc h2 { font-size: 16px; font-weight: 800; margin: 0 0 14px; }
+  .cm-bloc { background: #fff; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .cm-bloc h2 { font-size: 18px; font-weight: 800; margin: 0 0 14px; }
   .cm-bloc-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 
   .cm-rangee { display: grid; grid-template-columns: 1fr; gap: 0 12px; }
   .cm-champ { margin-bottom: 14px; }
-  .cm-label { display: block; font-size: 13.5px; font-weight: 700; margin-bottom: 7px; padding: 0; }
+  .cm-label { display: block; font-size: 15px; font-weight: 700; margin-bottom: 8px; padding: 0; }
   .cm-optionnel { font-weight: 500; color: ${C.inkSoft}; }
-  .cm-aide { font-size: 12.5px; color: ${C.inkSoft}; margin: 6px 0 0; line-height: 1.45; }
-  .cm-erreur-champ { font-size: 12.5px; color: ${C.clay}; font-weight: 700; margin: 6px 0 0; }
+  .cm-aide { font-size: 14px; color: ${C.inkSoft}; margin: 8px 0 0; line-height: 1.45; }
+  .cm-erreur-champ { font-size: 14px; color: ${C.clay}; font-weight: 700; margin: 8px 0 0; }
 
   /* 16 px minimum : sinon l'iPhone zoome tout seul sur le champ */
   .cm-input {
-    width: 100%; height: 50px; padding: 0 14px; border-radius: 12px;
+    width: 100%; height: 50px; padding: 0 16px; border-radius: 8px;
     border: 1.5px solid ${C.line}; background: ${C.sand};
     font-size: 16px; font-family: inherit; color: ${C.inkDeep}; outline: none;
   }
@@ -487,32 +485,33 @@ const css = `
   .cm-iles-grille { display: grid; grid-template-columns: 1fr; gap: 8px; outline: none; }
   .cm-ile {
     position: relative; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: baseline;
-    border: 2px solid ${C.line}; border-radius: 12px; padding: 12px 14px; cursor: pointer; background: #fff;
+    border: 1.5px solid ${C.line}; border-radius: 8px; padding: 12px 16px; cursor: pointer; background: ${C.white};
+    min-height: 44px;
   }
   .cm-ile b { font-size: 15px; }
-  .cm-ile span { font-size: 12.5px; color: ${C.inkSoft}; grid-column: 1; }
-  .cm-ile small { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 12px; font-weight: 700; color: ${C.inkSoft}; text-align: right; }
-  .cm-ile-on { border-color: ${C.ink}; background: #EEF4F6; }
+  .cm-ile span { font-size: 14px; color: ${C.inkSoft}; grid-column: 1; }
+  .cm-ile small { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 14px; font-weight: 700; color: ${C.inkSoft}; text-align: right; }
+  .cm-ile-on { border-color: ${C.ink}; box-shadow: inset 0 0 0 1px ${C.ink}; }
   .cm-ile-on small { color: ${C.ink}; }
   .cm-radio { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .cm-ile:focus-within { outline: 2px solid ${C.gold}; outline-offset: 2px; }
+  .cm-ile:focus-within { outline: 2px solid ${C.ink}; outline-offset: 2px; }
 
-  .cm-delai { font-size: 13px; color: ${C.inkDeep}; background: #FFF6E4; border-radius: 12px; padding: 12px 14px; margin: 0; line-height: 1.5; }
+  .cm-delai { font-size: 14px; color: ${C.inkDeep}; background: ${C.sand}; border-radius: 8px; padding: 12px 16px; margin: 0; line-height: 1.5; }
 
-  .cm-paiement { display: flex; gap: 12px; align-items: center; border: 2px solid ${C.ink}; background: #EEF4F6; border-radius: 12px; padding: 14px; }
+  .cm-paiement { display: flex; gap: 12px; align-items: center; border: 1.5px solid ${C.ink}; border-radius: 8px; padding: 12px 16px; }
   .cm-paiement-coche {
     width: 26px; height: 26px; border-radius: 50%; background: ${C.ink}; color: #fff;
-    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
   .cm-paiement b { display: block; font-size: 15px; }
-  .cm-paiement span { font-size: 13px; color: ${C.inkSoft}; }
+  .cm-paiement span { font-size: 14px; color: ${C.inkSoft}; }
 
   /* ── Récapitulatif ── */
-  .cm-resume-mobile { background: #fff; border: 1px solid ${C.line}; border-radius: 14px; overflow: hidden; }
+  .cm-resume-mobile { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; overflow: hidden; }
   .cm-resume-bouton {
     width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px;
     background: none; border: none; padding: 14px 16px; cursor: pointer; font-family: inherit;
-    font-size: 14px; font-weight: 700; color: ${C.ink}; min-height: 52px;
+    font-size: 15px; font-weight: 700; color: ${C.ink}; min-height: 52px;
   }
   .cm-resume-bouton b { color: ${C.inkDeep}; font-size: 16px; }
   .cm-resume-contenu { padding: 0 16px 14px; border-top: 1px solid ${C.line}; }
@@ -522,18 +521,18 @@ const css = `
   .cm-ligne { display: flex; gap: 12px; align-items: center; }
   .cm-ligne-indispo { opacity: 0.85; }
   .cm-thumb {
-    width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+    width: 52px; height: 52px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
     background: ${C.sand}; display: flex; align-items: center; justify-content: center;
   }
   .cm-ligne-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .cm-ligne-info b { font-size: 14px; }
-  .cm-ligne-info > span { font-size: 12.5px; color: ${C.inkSoft}; }
+  .cm-ligne-info b { font-size: 15px; }
+  .cm-ligne-info > span { font-size: 14px; color: ${C.inkSoft}; }
   .cm-indispo { color: ${C.clay} !important; font-weight: 700; }
   .cm-indispo button { background: none; border: none; padding: 0; color: ${C.clay}; font: inherit; text-decoration: underline; cursor: pointer; }
-  .cm-ligne-prix { font-size: 14px; white-space: nowrap; }
+  .cm-ligne-prix { font-size: 15px; white-space: nowrap; }
 
   .cm-totaux { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid ${C.line}; display: flex; flex-direction: column; gap: 8px; }
-  .cm-totaux div { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .cm-totaux div { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
   .cm-totaux dt { color: ${C.inkSoft}; }
   .cm-totaux dd { margin: 0; font-weight: 700; text-align: right; }
   .cm-total { padding-top: 10px; border-top: 1px dashed ${C.line}; }
@@ -543,51 +542,46 @@ const css = `
   /* ── Bouton de validation : collé en bas de l'écran sur téléphone (zone du pouce) ── */
   .cm-validation {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
-    background: #fff; border-top: 1px solid ${C.line}; padding: 12px 16px 16px;
-    box-shadow: 0 -6px 20px rgba(20,58,75,0.08);
+    background: ${C.white}; border-top: 1px solid ${C.line}; padding: 12px 16px 16px;
   }
   .cm-erreur {
-    font-size: 13.5px; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5;
-    border-radius: 10px; padding: 10px 12px; margin: 0 0 10px; line-height: 1.45;
+    font-size: 14px; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5;
+    border-radius: 8px; padding: 12px; margin: 0 0 12px; line-height: 1.45;
   }
-  .cm-rassurance { font-size: 12px; color: ${C.inkSoft}; text-align: center; margin: 8px 0 0; }
+  .cm-rassurance { font-size: 14px; color: ${C.inkSoft}; text-align: center; margin: 8px 0 0; }
 
   .cm-btn-principal {
     display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px;
-    background: ${C.gold}; color: ${C.inkDeep}; border: none; border-radius: 12px; cursor: pointer;
+    background: ${C.gold}; color: ${C.inkDeep}; border: none; border-radius: 8px; cursor: pointer;
     font-family: inherit; font-size: 16px; font-weight: 800; text-decoration: none; padding: 0 16px;
   }
   .cm-btn-principal:hover { background: ${C.goldDeep}; }
   .cm-btn-principal:disabled { background: ${C.line}; color: #8A979D; cursor: wait; }
   .cm-btn-secondaire {
-    min-height: 48px; padding: 0 16px; border-radius: 12px; cursor: pointer; font-family: inherit;
-    background: #fff; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; font-size: 14px; font-weight: 700;
+    min-height: 48px; padding: 0 16px; border-radius: 8px; cursor: pointer; font-family: inherit;
+    background: ${C.white}; border: 1.5px solid ${C.line}; color: ${C.inkDeep}; font-size: 15px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px; text-decoration: none;
   }
-  .cm-btn-whatsapp {
-    display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 16px;
-    border-radius: 12px; background: #1F9D55; color: #fff; font-size: 14px; font-weight: 700; text-decoration: none;
-  }
-  .cm-lien-simple { font-size: 14px; font-weight: 700; color: ${C.ink}; text-decoration: underline; text-underline-offset: 3px; }
+  .cm-btn-secondaire:hover { border-color: ${C.inkSoft}; }
+  .cm-lien-simple { font-size: 15px; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; color: ${C.ink}; text-decoration: underline; text-underline-offset: 3px; }
 
   /* ── Écran de confirmation ── */
   .cm-merci { max-width: 560px; margin: 0 auto; padding: 28px 16px; text-align: center; }
   .cm-merci-icone {
     width: 64px; height: 64px; border-radius: 50%; background: ${C.leaf}; color: #fff;
-    display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
   }
-  .cm-merci h1 { font-size: 23px; font-weight: 800; margin: 0 0 6px; }
-  .cm-merci-ref { font-size: 14px; color: ${C.inkSoft}; margin: 0 0 20px; }
+  .cm-merci h1 { font-size: 24px; font-weight: 800; margin: 0 0 8px; }
+  .cm-merci-ref { font-size: 15px; color: ${C.inkSoft}; margin: 0 0 24px; }
   .cm-merci .cm-bloc { text-align: left; }
-  .cm-prochaine { border-color: ${C.gold}; background: #FFFBF2; }
-  .cm-prochaine p { margin: 0; font-size: 14px; line-height: 1.55; }
+  .cm-prochaine { border-color: ${C.ink}; }
+  .cm-prochaine p { margin: 0; font-size: 15px; line-height: 1.55; }
   .cm-lien {
-    background: ${C.sand}; border-radius: 10px; padding: 12px; font-size: 13px; word-break: break-all;
+    background: ${C.sand}; border-radius: 8px; padding: 12px; font-size: 14px; word-break: break-all;
     font-weight: 600; color: ${C.ink}; margin: 10px 0;
   }
   .cm-actions-lien { display: grid; grid-template-columns: 1fr; gap: 8px; }
   .cm-merci-boutons { display: flex; flex-direction: column; gap: 14px; align-items: center; margin-top: 8px; }
-
-  a:focus-visible, button:focus-visible, .cm-input:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
 
   /* ═══════════ ÉCRANS PLUS LARGES ═══════════ */
   @media (min-width: 560px) {
@@ -603,8 +597,8 @@ const css = `
     .cm-grille { grid-template-columns: minmax(0, 1fr) 360px; align-items: start; gap: 24px; padding: 24px 20px; }
     .cm-resume-mobile { display: none; }
     .cm-colonne-resume { position: sticky; top: 76px; }
-    .cm-resume-bureau { display: block; background: #fff; border: 1px solid ${C.line}; border-radius: 16px; padding: 18px; }
-    .cm-resume-bureau h2 { font-size: 16px; font-weight: 800; margin: 0; }
-    .cm-validation { position: static; box-shadow: none; border: none; background: none; padding: 14px 0 0; }
+    .cm-resume-bureau { display: block; background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; }
+    .cm-resume-bureau h2 { font-size: 18px; font-weight: 800; margin: 0; }
+    .cm-validation { position: static; border: none; background: none; padding: 16px 0 0; }
   }
 `
