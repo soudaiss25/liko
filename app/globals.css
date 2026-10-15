@@ -45,7 +45,7 @@ body {
 /* État vide / erreur */
 .ui-vide {
   display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
-  padding: 48px 16px; color: #6e8a97; font-size: 15px;
+  padding: 48px 16px; color: #587380; font-size: 15px;
 }
 .ui-vide p { margin: 0; max-width: 360px; line-height: 1.5; }
 
@@ -62,7 +62,7 @@ body {
 .ui-btn-principal { background: #1d4e63; color: #fff; }
 .ui-btn-principal:hover:not(:disabled) { background: #143a4b; }
 .ui-btn-secondaire { background: #fff; color: #143a4b; border-color: #e4ded2; }
-.ui-btn-secondaire:hover:not(:disabled) { border-color: #6e8a97; }
+.ui-btn-secondaire:hover:not(:disabled) { border-color: #587380; }
 .ui-btn-danger { background: #fff; color: #c2574a; border-color: #e9c9c4; }
 .ui-btn-danger:hover:not(:disabled) { background: #fbf0ee; }
 .ui-btn-texte { background: none; color: #1d4e63; padding: 0 8px; text-decoration: underline; }
@@ -82,8 +82,8 @@ body {
 /* Champs de formulaire */
 .ui-champ { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; min-width: 0; }
 .ui-label { font-size: 15px; font-weight: 700; color: #143a4b; }
-.ui-optionnel { font-weight: 500; color: #6e8a97; }
-.ui-aide { font-size: 14px; color: #6e8a97; margin: 0; line-height: 1.45; }
+.ui-optionnel { font-weight: 500; color: #587380; }
+.ui-aide { font-size: 14px; color: #587380; margin: 0; line-height: 1.45; }
 .ui-erreur-champ { font-size: 14px; color: #c2574a; font-weight: 700; margin: 0; }
 /* 16 px minimum : sinon certains navigateurs zooment tout seuls sur le champ */
 .ui-input {
@@ -108,7 +108,7 @@ textarea.ui-input { padding: 12px 16px; line-height: 1.45; resize: vertical; }
 .ui-auth-marque span { font-size: 24px; font-weight: 800; color: #1d4e63; }
 .ui-auth-carte { width: 100%; max-width: 440px; background: #fff; border: 1px solid #e4ded2; border-radius: 12px; padding: 24px 16px; }
 .ui-auth-titre { font-size: 24px; font-weight: 800; color: #143a4b; margin: 0 0 8px; }
-.ui-auth-sous { font-size: 15px; color: #6e8a97; margin: 0 0 24px; line-height: 1.45; }
-.ui-auth-liens { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; font-size: 15px; color: #6e8a97; text-align: center; }
+.ui-auth-sous { font-size: 15px; color: #587380; margin: 0 0 24px; line-height: 1.45; }
+.ui-auth-liens { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; font-size: 15px; color: #587380; text-align: center; }
 .ui-auth-liens a { color: #1d4e63; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
 @media (min-width: 480px) { .ui-auth-carte { padding: 32px 24px; } }

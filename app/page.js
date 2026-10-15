@@ -26,7 +26,6 @@ export default function Catalogue() {
 
   const [categorie, setCategorie] = useState('Tout')
   const [recherche, setRecherche] = useState('')
-  const [favoris, setFavoris] = useState([])
 
   useEffect(() => {
     const chargerUser = async () => {
@@ -56,9 +55,6 @@ export default function Catalogue() {
     const matchRecherche = !q || normaliserTexte(`${p.nom} ${p.description || ''}`).includes(q)
     return matchCat && matchRecherche
   })
-
-  const toggleFavori = (id) =>
-    setFavoris((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
 
   /* Le bouton du bandeau descend jusqu'aux produits */
   const allerAuxProduits = () =>
@@ -143,13 +139,7 @@ export default function Catalogue() {
         ) : (
           <div className="grid">
             {produitsFiltres.map((p) => (
-              <ProductCard
-                key={p.id}
-                produit={p}
-                estFavori={favoris.includes(p.id)}
-                onToggleFavori={() => toggleFavori(p.id)}
-                titreFavori={user ? 'Ajouter aux favoris' : 'Connecte-toi pour sauvegarder tes favoris'}
-              />
+              <ProductCard key={p.id} produit={p} />
             ))}
           </div>
         )}

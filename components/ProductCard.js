@@ -5,7 +5,8 @@
    favoris, "tu aimeras aussi", résultats de recherche…
 
    Elle gère elle-même l'ajout au panier (et le petit "Ajouté").
-   Le cœur favori n'apparaît que si la page fournit onToggleFavori.
+   Le cœur favori n'apparaît que si la page fournit onToggleFavori
+   (pas utilisé pour l'instant : les favoris ne sont enregistrés nulle part).
 
    Utilisation :
      <ProductCard produit={p} />
@@ -15,7 +16,7 @@
 import { useState } from 'react'
 import ProduitImage from '@/components/ProduitImage'
 import { ajouterAuPanier } from '@/lib/cart'
-import { Heart, Check } from 'lucide-react'
+import { Heart, Check, ShoppingCart } from 'lucide-react'
 import Icone from '@/components/ui/Icone'
 import { formatKMF, prixPieceEnLot } from '@/lib/produit'
 
@@ -75,7 +76,7 @@ export default function ProductCard({ produit: p, estFavori = false, onToggleFav
 
         <div className="pc-add-wrap">
           <button onClick={ajouter} className={`pc-add ${ajoute ? 'pc-add-done' : ''}`}>
-            {ajoute ? <><Icone icone={Check} taille={18} /> Ajouté</> : 'Ajouter au panier'}
+            {ajoute ? <><Icone icone={Check} taille={18} /> Ajouté</> : <><Icone icone={ShoppingCart} taille={18} /> Ajouter au panier</>}
           </button>
         </div>
       </div>
@@ -126,11 +127,10 @@ const css = `
   /* margin-top: auto → le bouton reste collé en bas, toutes les cartes sont alignées */
   .pc-add-wrap { margin-top: auto; padding-top: 12px; }
   .pc-add {
-    width: 100%; min-height: 44px; border: none; border-radius: 8px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 4px;
-    background: ${C.gold}; color: ${C.inkDeep}; font-size: 14px; font-weight: 700; font-family: inherit;
+    width: 100%; min-height: 44px; border: 1.5px solid ${C.ink}; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: ${C.white}; color: ${C.ink}; font-size: 14px; font-weight: 700; font-family: inherit;
   }
-  .pc-add:hover { background: ${C.goldDeep}; }
-  .pc-add-done { background: ${C.leaf}; color: ${C.white}; }
-  .pc-add-done:hover { background: ${C.leaf}; }
+  .pc-add:hover { background: ${C.sand}; }
+  .pc-add-done, .pc-add-done:hover { background: ${C.leaf}; border-color: ${C.leaf}; color: ${C.white}; }
 `

@@ -13,7 +13,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { ClipboardList, Bell, Phone, MessageCircle, Bike, TriangleAlert, ArrowLeft } from 'lucide-react'
+import { Check, ClipboardList, Bell, Phone, MessageCircle, Bike, TriangleAlert, ArrowLeft } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
 import Icone from '@/components/ui/Icone'
 import EtatVide from '@/components/ui/EtatVide'
@@ -341,7 +341,7 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
                 onChange={(e) => setNoteMontant(e.target.value)} />
             </div>
           )}
-          <button onClick={livrer} disabled={occupe} className="btn-primary btn-large">✓ Livrée et encaissée</button>
+          <button onClick={livrer} disabled={occupe} className="btn-primary btn-large"><Icone icone={Check} taille={18} /> Livrée et encaissée</button>
 
           {!ouvertEchec ? (
             <button onClick={() => setOuvertEchec(true)} disabled={occupe} className="btn-danger btn-large cc-bouton">

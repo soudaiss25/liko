@@ -139,7 +139,7 @@ export default function Register() {
             </Champ>
 
             <Champ id="username" label="Nom d'utilisateur" aide="C'est ce nom qui te servira à te connecter.">
-              <input id="username" className="ui-input" autoCapitalize="none" autoComplete="username"
+              <input id="username" className="ui-input" aria-describedby="username-aide" autoCapitalize="none" autoComplete="username"
                 value={username} onChange={(e) => setUsername(e.target.value)} />
             </Champ>
 
@@ -173,7 +173,7 @@ export default function Register() {
             </Champ>
 
             <Champ id="pw" label="Mot de passe" aide="Au moins 6 caractères.">
-              <input id="pw" className="ui-input" type="password" autoComplete="new-password"
+              <input id="pw" className="ui-input" aria-describedby="pw-aide" type="password" autoComplete="new-password"
                 value={password} onChange={(e) => setPassword(e.target.value)} />
             </Champ>
 

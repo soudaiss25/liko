@@ -306,7 +306,7 @@ export default function PageCommande() {
 
             <div className="cm-rangee">
               <Champ id="prenom" label="Prénom" erreur={erreurs.prenom}>
-                <input id="champ-prenom" className="cm-input" autoComplete="given-name" value={form.prenom}
+                <input id="champ-prenom" className="cm-input" aria-describedby={erreurs.prenom ? 'champ-prenom-erreur' : undefined} autoComplete="given-name" value={form.prenom}
                   onChange={(e) => changer('prenom', e.target.value)} aria-invalid={!!erreurs.prenom} />
               </Champ>
               <Champ id="nom" label="Nom" optionnel>
@@ -323,14 +323,14 @@ export default function PageCommande() {
                   {INDICATIFS.map((i) => <option key={i.code} value={i.code}>{i.code} {i.pays}</option>)}
                   <option value="autre">Autre pays</option>
                 </select>
-                <input id="champ-numero" className="cm-input" type="tel" inputMode="tel" autoComplete="tel-national"
+                <input id="champ-numero" className="cm-input" aria-describedby={erreurs.numero ? 'champ-numero-erreur' : 'champ-numero-aide'} type="tel" inputMode="tel" autoComplete="tel-national"
                   placeholder={form.indicatif === 'autre' ? '+… numéro complet' : '333 44 55'}
                   value={form.numero} onChange={(e) => changer('numero', e.target.value)} aria-invalid={!!erreurs.numero} />
               </div>
             </Champ>
 
             <Champ id="email" label="E-mail" optionnel erreur={erreurs.email} aide="Pour recevoir le suivi de ta commande par e-mail.">
-              <input id="champ-email" className="cm-input" type="email" inputMode="email" autoComplete="email"
+              <input id="champ-email" className="cm-input" aria-describedby={erreurs.email ? 'champ-email-erreur' : 'champ-email-aide'} type="email" inputMode="email" autoComplete="email"
                 value={form.email} onChange={(e) => changer('email', e.target.value)} aria-invalid={!!erreurs.email} />
             </Champ>
           </section>
@@ -359,7 +359,7 @@ export default function PageCommande() {
 
             <Champ id="adresse" label="Adresse" erreur={erreurs.adresse}
               aide="Quartier, rue et un repère connu : le livreur doit pouvoir te trouver.">
-              <textarea id="champ-adresse" className="cm-input cm-textarea" rows={3} autoComplete="street-address"
+              <textarea id="champ-adresse" className="cm-input cm-textarea" aria-describedby={erreurs.adresse ? 'champ-adresse-erreur' : 'champ-adresse-aide'} rows={3} autoComplete="street-address"
                 placeholder="Ex : Fomboni, quartier Djoiezi, à côté de la boulangerie"
                 value={form.adresse} onChange={(e) => changer('adresse', e.target.value)} aria-invalid={!!erreurs.adresse} />
             </Champ>
@@ -424,7 +424,7 @@ function Champ({ id, label, optionnel, aide, erreur, children }) {
         {label} {optionnel && <span className="cm-optionnel">(facultatif)</span>}
       </label>
       {children}
-      {erreur ? <p className="cm-erreur-champ">{erreur}</p> : aide && <p className="cm-aide">{aide}</p>}
+      {erreur ? <p className="cm-erreur-champ" id={`champ-${id}-erreur`}>{erreur}</p> : aide && <p className="cm-aide" id={`champ-${id}-aide`}>{aide}</p>}
     </div>
   )
 }

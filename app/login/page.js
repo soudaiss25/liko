@@ -110,6 +110,7 @@ export default function Login() {
           <input
             id="identifiant"
             className="ui-input"
+            aria-describedby="identifiant-aide"
             placeholder="+269 333 44 55 ou ton nom d'utilisateur"
             autoComplete="username"
             autoCapitalize="none"

@@ -568,7 +568,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
                         </small>
                       )}
                     </span>
-                    <button onClick={() => retirerLigne(i)} className="ed-retirer" aria-label={`Retirer ${p?.nom || 'ce produit'}`}>✕</button>
+                    <button onClick={() => retirerLigne(i)} className="ed-retirer" aria-label={`Retirer ${p?.nom || 'ce produit'}`}><Icone icone={X} taille={18} /></button>
                   </div>
                   <div className="ed-ligne-champs">
                     <div>

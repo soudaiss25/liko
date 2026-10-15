@@ -19,7 +19,7 @@ import CadreEspace from '@/components/espace/CadreEspace'
 import CarteEnvoi from '@/components/espace/CarteEnvoi'
 import DetailEnvoi from '@/components/espace/DetailEnvoi'
 import { CommandesListe, DetailCommande } from '@/components/espace/CommandesComores'
-import { Truck, Package, Warehouse, TriangleAlert, StickyNote, RefreshCw, ArrowLeft, Search } from 'lucide-react'
+import { Check, Truck, Package, Warehouse, TriangleAlert, StickyNote, RefreshCw, ArrowLeft, Search } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
 import Icone from '@/components/ui/Icone'
 import EtatVide from '@/components/ui/EtatVide'
@@ -407,14 +407,14 @@ function Reception({ envoi, onFermer }) {
       {/* Résumé toujours visible avant de confirmer */}
       <div className={`rc-resume ${nbEcarts > 0 ? 'rc-resume-ecart' : ''}`}>
         <span><b>{recu}</b> pièce{recu > 1 ? 's' : ''} reçue{recu > 1 ? 's' : ''} sur {envoye}</span>
-        <span>{nbEcarts === 0 ? '✓ Tout est conforme' : `${nbEcarts} écart${nbEcarts > 1 ? 's' : ''}`}</span>
+        <span>{nbEcarts === 0 ? <><Icone icone={Check} taille={18} /> Tout est conforme</> : `${nbEcarts} écart${nbEcarts > 1 ? 's' : ''}`}</span>
       </div>
 
       {erreur && <p role="alert" className="err">{erreur}</p>}
 
       <div className="rc-actions">
         <button onClick={confirmer} disabled={occupe} className="btn-primary btn-large">
-          {occupe ? 'Enregistrement…' : '✓ Confirmer la réception'}
+          {occupe ? 'Enregistrement…' : <><Icone icone={Check} taille={18} /> Confirmer la réception</>}
         </button>
         <button onClick={() => { setSaisie(saisieParDefaut()); setTenteEnvoi(false); setErreur('') }}
           disabled={occupe} className="btn-secondary btn-large">

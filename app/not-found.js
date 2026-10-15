@@ -13,7 +13,7 @@ export default function NotFound() {
       <main style={{ maxWidth: 440, margin: '0 auto', padding: '64px 16px', textAlign: 'center', color: '#143a4b' }}>
         <Icone icone={Compass} taille={32} />
         <h1 style={{ fontSize: 24, fontWeight: 800, margin: '16px 0 8px' }}>Page introuvable</h1>
-        <p style={{ fontSize: 16, color: '#6e8a97', margin: '0 0 24px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: 16, color: '#587380', margin: '0 0 24px', lineHeight: 1.5 }}>
           Cette page n&apos;existe pas ou a été déplacée.
         </p>
         <Bouton variante="principal" href="/">Retour à l&apos;accueil</Bouton>
