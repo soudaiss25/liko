@@ -203,7 +203,7 @@ export default function Collaborateurs() {
       <div className="page-head">
         <div>
           <h1 id="titre-collabs" className="page-title">Collaborateurs</h1>
-          <p className="page-sub">Les personnes qui achètent à l'étranger et réceptionnent aux Comores</p>
+          <p className="page-sub">Les personnes qui achètent à l&apos;étranger et réceptionnent aux Comores</p>
         </div>
         {!formOuvert && (
           <button onClick={ouvrirForm} className="btn-primary"><Icone icone={Plus} taille={18} /> Ajouter un collaborateur</button>
@@ -265,7 +265,7 @@ export default function Collaborateurs() {
 
               {form.mode === 'existant' ? (
                 <div className="field">
-                  <label className="label" htmlFor="co-identifiant">Nom d'utilisateur ou téléphone de son compte</label>
+                  <label className="label" htmlFor="co-identifiant">Nom d&apos;utilisateur ou téléphone de son compte</label>
                   <input id="co-identifiant" className="input" value={form.identifiant} autoCapitalize="none"
                     onChange={(e) => changer('identifiant', e.target.value)} placeholder="said_m ou +2693334455" />
                 </div>
@@ -285,12 +285,12 @@ export default function Collaborateurs() {
                   </div>
                   <div className="row">
                     <div className="field">
-                      <label className="label" htmlFor="co-username">Nom d'utilisateur</label>
+                      <label className="label" htmlFor="co-username">Nom d&apos;utilisateur</label>
                       <input id="co-username" className="input" value={form.username} autoCapitalize="none"
                         onChange={(e) => changer('username', e.target.value)} placeholder="said_m" />
                     </div>
                     <div className="field">
-                      <label className="label" htmlFor="co-tel">Téléphone <span className="optional">— avec l'indicatif</span></label>
+                      <label className="label" htmlFor="co-tel">Téléphone <span className="optional">— avec l&apos;indicatif</span></label>
                       <input id="co-tel" className="input" inputMode="tel" value={form.telephone}
                         onChange={(e) => changer('telephone', e.target.value)} placeholder="+269 333 44 55" />
                     </div>
@@ -349,9 +349,9 @@ export default function Collaborateurs() {
                   </div>
                 ) : (
                   <div className="co-ligne-actions">
-                    <button onClick={() => changerEspace(c)} disabled={occupe} className="co-btn"><Icone icone={ArrowLeftRight} taille={18} /> Changer d'espace</button>
+                    <button onClick={() => changerEspace(c)} disabled={occupe} className="co-btn"><Icone icone={ArrowLeftRight} taille={18} /> Changer d&apos;espace</button>
                     <button onClick={() => { setMdpPour(c.id); setNouveauMdp('') }} disabled={occupe} className="co-btn"><Icone icone={KeyRound} taille={18} /> Nouveau mot de passe</button>
-                    <button onClick={() => retirerAcces(c)} disabled={occupe} className="co-btn co-btn-danger">Retirer l'accès</button>
+                    <button onClick={() => retirerAcces(c)} disabled={occupe} className="co-btn co-btn-danger">Retirer l&apos;accès</button>
                   </div>
                 )}
               </li>

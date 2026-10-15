@@ -41,7 +41,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} {NOM_BOUTIQUE}</span>
+        <span>{NOM_BOUTIQUE}, {new Date().getFullYear()}</span>
       </div>
     </footer>
   )
@@ -71,7 +71,7 @@ const css = `
   .footer-col h4 { font-size: 14px; font-weight: 700; margin: 0 0 8px; color: ${C.white}; }
   .footer-col a {
     display: block; font-size: 14px; color: rgba(255,255,255,0.75);
-    text-decoration: none; padding: 8px 0;
+    text-decoration: none; padding: 12px 0;
   }
   .footer-col a:hover { color: ${C.white}; text-decoration: underline; }
   .footer-bottom {

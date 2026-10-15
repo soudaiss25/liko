@@ -250,7 +250,7 @@ export default function PageSuivi() {
               )}
             </div>
             {commande.peut_annuler && (
-              <p className="sv-aide">Tu peux annuler toi-même tant que nous ne t'avons pas appelé pour confirmer.</p>
+              <p className="sv-aide">Tu peux annuler toi-même tant que nous ne t&apos;avons pas appelé pour confirmer.</p>
             )}
           </div>
         </div>

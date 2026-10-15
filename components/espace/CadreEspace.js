@@ -49,9 +49,9 @@ export default function CadreEspace({ rolesAutorises, titre, children }) {
           <div className="refuse-emoji"><Icone icone={Lock} taille={32} /></div>
           <h1 className="refuse-title">Accès réservé</h1>
           <p className="refuse-sub">
-            Ton compte n'a pas accès à cet espace. Si c'est une erreur, contacte l'administrateur.
+            Ton compte n&apos;a pas accès à cet espace. Si c&apos;est une erreur, contacte l&apos;administrateur.
           </p>
-          <a href="/" className="btn-primary">Retour à l'accueil</a>
+          <a href="/" className="btn-primary">Retour à l&apos;accueil</a>
         </div>
       </div>
     )
@@ -74,7 +74,7 @@ export default function CadreEspace({ rolesAutorises, titre, children }) {
         </div>
         {profil?.role === 'admin' && (
           <div className="esp-test">
-            Mode test : tu vois cet espace en tant qu'admin. <a href="/admin">Retour à l'admin</a>
+            Mode test : tu vois cet espace en tant qu&apos;admin. <a href="/admin">Retour à l&apos;admin</a>
           </div>
         )}
       </header>

@@ -233,14 +233,14 @@ export default function FicheProduit() {
 
             {produit.prix_gros ? (
               <div className="option-block">
-                <div className="option-label">Comment veux-tu l'acheter ?</div>
+                <div className="option-label">Comment veux-tu l&apos;acheter ?</div>
                 <div className="mode-row">
                   <button
                     onClick={() => changerMode('unite')}
                     aria-pressed={mode === 'unite'}
                     className={`mode-card ${mode === 'unite' ? 'mode-card-on' : ''}`}
                   >
-                    <span className="mode-card-name">À l'unité</span>
+                    <span className="mode-card-name">À l&apos;unité</span>
                     <span className="mode-card-desc">1 pièce</span>
                     <span className="mode-card-price">{formatKMF(produit.prix_detail)} KMF</span>
                   </button>
@@ -336,7 +336,7 @@ const css = `
   .wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
 
   .breadcrumb { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 4px; }
-  .breadcrumb a { color: ${C.inkSoft}; display: inline-flex; align-items: center; min-height: 32px; }
+  .breadcrumb a { color: ${C.inkSoft}; display: inline-flex; align-items: center; min-height: 44px; }
   .breadcrumb-current { color: ${C.inkDeep}; font-weight: 600; overflow-wrap: anywhere; }
 
   .product-layout { display: grid; grid-template-columns: 1fr; gap: 24px; }

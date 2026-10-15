@@ -140,7 +140,7 @@ export default function Admin() {
           <div className="refuse-emoji"><Icone icone={Lock} taille={32} /></div>
           <h1 className="refuse-title">Accès réservé</h1>
           <p className="refuse-sub">Cette page est réservée aux administrateurs de Salut Marketplace.</p>
-          <a href="/" className="refuse-btn">Retour à l'accueil</a>
+          <a href="/" className="refuse-btn">Retour à l&apos;accueil</a>
         </div>
       </div>
     )

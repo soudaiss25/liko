@@ -104,7 +104,7 @@ textarea.ui-input { padding: 12px 16px; line-height: 1.45; resize: vertical; }
 /* Page d'authentification */
 .ui-auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 48px; }
 .ui-auth-marque { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; min-height: 44px; }
-.ui-auth-marque img { width: 48px; height: 48px; object-fit: contain; }
+.ui-auth-marque img { width: 64px; height: 64px; object-fit: contain; }
 .ui-auth-marque span { font-size: 24px; font-weight: 800; color: #1d4e63; }
 .ui-auth-carte { width: 100%; max-width: 440px; background: #fff; border: 1px solid #e4ded2; border-radius: 12px; padding: 24px 16px; }
 .ui-auth-titre { font-size: 24px; font-weight: 800; color: #143a4b; margin: 0 0 8px; }

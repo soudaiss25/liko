@@ -230,7 +230,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
         </div>
 
         <div className="field">
-          <label className="label" htmlFor="prix_detail">Prix à l'unité (KMF)</label>
+          <label className="label" htmlFor="prix_detail">Prix à l&apos;unité (KMF)</label>
           <input id="prix_detail" className="input" type="number" value={form.prix_detail}
             onChange={(e) => setForm({ ...form, prix_detail: e.target.value })}
             placeholder="2500" />
@@ -254,7 +254,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
                   placeholder="10" />
               </div>
               <div className="field">
-                <label className="label" htmlFor="prix_piece_lot">Prix d'une pièce dans le lot (KMF)</label>
+                <label className="label" htmlFor="prix_piece_lot">Prix d&apos;une pièce dans le lot (KMF)</label>
                 <input id="prix_piece_lot" className="input" type="number" value={form.prix_piece_lot}
                   onChange={(e) => setForm({ ...form, prix_piece_lot: e.target.value })}
                   placeholder="1800" />
@@ -265,7 +265,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
             {nbLot > 0 && pieceLot > 0 && (
               <p className={`fp-gros-resume ${lotIncoherent ? 'fp-gros-err' : ''}`} aria-live="polite">
                 {lotIncoherent ? (
-                  <>{formatKMF(pieceLot)} KMF la pièce en lot, c'est plus cher ou égal au prix à l'unité ({formatKMF(prixUnite)} KMF).</>
+                  <>{formatKMF(pieceLot)} KMF la pièce en lot, c&apos;est plus cher ou égal au prix à l&apos;unité ({formatKMF(prixUnite)} KMF).</>
                 ) : (
                   <>
                     Lot de {nbLot} × {formatKMF(pieceLot)} KMF = <b>{formatKMF(totalLot)} KMF le lot</b>
@@ -278,7 +278,7 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
         )}
 
         <div className="field">
-          <label className="label" htmlFor="prix_achat">Prix d'achat <span className="optional">— usage interne, sert à calculer ta marge</span></label>
+          <label className="label" htmlFor="prix_achat">Prix d&apos;achat <span className="optional">— usage interne, sert à calculer ta marge</span></label>
           <input id="prix_achat" className="input" type="number" value={form.prix_achat}
             onChange={(e) => setForm({ ...form, prix_achat: e.target.value })}
             placeholder="1200" />

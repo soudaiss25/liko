@@ -61,11 +61,13 @@ function texteLisible(texte) {
 }
 
 export default function Dashboard({ produits, commandes, items, onVoirProduits, onActualiser }) {
-  const aujourdhui = versTexteDate(new Date())
+  // L'heure est lue UNE fois à l'ouverture (et non à chaque affichage) : le calcul des périodes reste stable
+  const [maintenant] = useState(() => Date.now())
+  const aujourdhui = versTexteDate(new Date(maintenant))
 
   const [periode, setPeriode] = useState('30')
   // Par défaut, la période personnalisée = les 30 derniers jours
-  const [dateDebut, setDateDebut] = useState(versTexteDate(new Date(Date.now() - 30 * UN_JOUR)))
+  const [dateDebut, setDateDebut] = useState(() => versTexteDate(new Date(maintenant - 30 * UN_JOUR)))
   const [dateFin, setDateFin] = useState(aujourdhui)
 
   /* Si on met un début après la fin (ou l'inverse), on corrige tout seul
@@ -99,7 +101,7 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
     jusqua = depuisTexteDate(dateFin, true)
   } else {
     const choix = PERIODES.find((p) => p.id === periode)
-    if (choix.jours) depuis = new Date(Date.now() - choix.jours * UN_JOUR)
+    if (choix.jours) depuis = new Date(maintenant - choix.jours * UN_JOUR)
   }
 
   /* ── Calculs ── */
@@ -231,7 +233,7 @@ export default function Dashboard({ produits, commandes, items, onVoirProduits, 
       {/* ── 1. Chiffres clés ── */}
       <div className="db-kpis">
         <div className="db-kpi">
-          <span className="db-kpi-label">Chiffre d'affaires</span>
+          <span className="db-kpi-label">Chiffre d&apos;affaires</span>
           <b className="db-kpi-val">{formatKMF(stats.ca)} <small>KMF</small></b>
           <span className="db-kpi-sub">hors commandes annulées</span>
         </div>

@@ -261,7 +261,7 @@ const css = `
   .ligne-info { min-width: 0; }
   .ligne-name {
     display: block; font-size: 15px; font-weight: 700; color: ${C.inkDeep};
-    text-decoration: none; margin-bottom: 4px; overflow-wrap: anywhere;
+    text-decoration: none; margin: -10px 0 0; min-height: 44px; display: flex; align-items: center; overflow-wrap: anywhere;
   }
   .ligne-name:hover { text-decoration: underline; }
   .ligne-mode { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 4px; }

@@ -196,7 +196,7 @@ function EspaceComores() {
               {horsLigne > 0 && (
                 <p className="st-alerte">
                   <Icone icone={TriangleAlert} taille={18} /> {horsLigne} produit{horsLigne > 1 ? 's sont' : ' est'} en stock mais pas en ligne sur le site.
-                  Préviens l'admin : ce stock ne peut pas se vendre.
+                  Préviens l&apos;admin : ce stock ne peut pas se vendre.
                 </p>
               )}
               <input
@@ -346,7 +346,7 @@ function Reception({ envoi, onFermer }) {
         </div>
       </div>
 
-      {envoi.note && <p className="rc-note"><Icone icone={StickyNote} taille={18} /> Note de l'expéditeur : {envoi.note}</p>}
+      {envoi.note && <p className="rc-note"><Icone icone={StickyNote} taille={18} /> Note de l&apos;expéditeur : {envoi.note}</p>}
 
       <p className="rc-consigne">
         Compte chaque produit. Les quantités sont pré-remplies avec ce qui a été envoyé :
@@ -386,7 +386,7 @@ function Reception({ envoi, onFermer }) {
                   onChange={(e) => changer(ligne.id, 'motif_ecart', e.target.value)}
                   aria-label={`Raison de l'écart pour ${ligne.nom}`}
                 >
-                  <option value="">Raison de l'écart…</option>
+                  <option value="">Raison de l&apos;écart…</option>
                   {MOTIFS_ECART.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
                 </select>
                 <input

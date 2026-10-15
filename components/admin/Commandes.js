@@ -102,7 +102,7 @@ export default function Commandes({ onChange }) {
       <div className="page-head">
         <div>
           <h1 id="titre-commandes" className="page-title">Commandes</h1>
-          <p className="page-sub">Confirme les nouvelles commandes par téléphone, puis suis-les jusqu'à la livraison.</p>
+          <p className="page-sub">Confirme les nouvelles commandes par téléphone, puis suis-les jusqu&apos;à la livraison.</p>
         </div>
         <button onClick={charger} className="btn-secondary"><Icone icone={RefreshCw} taille={18} /> Actualiser</button>
       </div>
@@ -230,7 +230,7 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
             <div className="ac-carte ac-carte-action">
               <h2>Confirmer la commande</h2>
               <p className="ac-texte">
-                Appelle le client pour vérifier sa commande et son adresse. Rien n'est acheté avant la confirmation.
+                Appelle le client pour vérifier sa commande et son adresse. Rien n&apos;est acheté avant la confirmation.
               </p>
               <div className="ac-contact">
                 <a href={`tel:${c.client?.telephone}`} className="ac-btn-appel"><Icone icone={Phone} taille={18} /> Appeler {c.client?.telephone}</a>
@@ -238,7 +238,7 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
               </div>
               <label className="ac-case">
                 <input type="checkbox" checked={clientJoint} onChange={(e) => setClientJoint(e.target.checked)} />
-                <span>J'ai joint le client : il confirme sa commande</span>
+                <span>J&apos;ai joint le client : il confirme sa commande</span>
               </label>
               <input className="input" placeholder="Note (facultatif) : ex. livrer après 17 h" value={noteConfirmation}
                 onChange={(e) => setNoteConfirmation(e.target.value)} aria-label="Note de confirmation" />
@@ -291,7 +291,7 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
                     </div>
 
                     {l.etat === 'retiree' && <p className="ac-ligne-note">Retiré : {l.note_etat}</p>}
-                    {manque && <p className="ac-ligne-alerte"><Icone icone={TriangleAlert} taille={18} /> Il en manque {l.quantite - l.quantite_recue} à l'arrivée. Préviens le client et ajuste l'encaissement.</p>}
+                    {manque && <p className="ac-ligne-alerte"><Icone icone={TriangleAlert} taille={18} /> Il en manque {l.quantite - l.quantite_recue} à l&apos;arrivée. Préviens le client et ajuste l&apos;encaissement.</p>}
 
                     {l.etat === 'indisponible' && (
                       <div className="ac-ligne-alerte">
@@ -366,7 +366,7 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
                   <input className="input" value={motifAnnulation} onChange={(e) => setMotifAnnulation(e.target.value)}
                     placeholder="Ou écris la raison" aria-label="Raison de l'annulation" />
                   <div className="ac-ligne-boutons">
-                    <button onClick={annuler} disabled={!motifAnnulation.trim() || occupe} className="ac-mini ac-mini-danger">Confirmer l'annulation</button>
+                    <button onClick={annuler} disabled={!motifAnnulation.trim() || occupe} className="ac-mini ac-mini-danger">Confirmer l&apos;annulation</button>
                     <button onClick={() => setAnnulationOuverte(false)} className="ac-mini">Garder la commande</button>
                   </div>
                 </>

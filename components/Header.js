@@ -166,13 +166,13 @@ const css = `
     display: flex; align-items: center; gap: 16px;
   }
   .hd-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; flex-shrink: 0; min-height: 44px; }
-  .hd-brand-logo { width: 44px; height: 44px; object-fit: contain; }
+  .hd-brand-logo { width: 56px; height: 56px; object-fit: contain; }
   .hd-brand-name { font-size: 24px; font-weight: 800; color: ${C.ink}; }
 
   .hd-searchbar {
     flex: 1; display: none; align-items: center; background: ${C.white};
     border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden;
-    height: 44px; max-width: 640px;
+    height: 48px; max-width: 640px;
   }
   .hd-searchbar:focus-within { border-color: ${C.ink}; }
   .hd-searchbar-input {
@@ -187,7 +187,7 @@ const css = `
   .hd-searchbar-btn:hover { background: ${C.inkDeep}; }
 
   .hd-searchbar-mobile {
-    display: flex; align-items: stretch; margin: 0 16px 8px; height: 44px;
+    display: flex; align-items: stretch; margin: 0 16px 8px; height: 48px;
     border: 1.5px solid ${C.line}; border-radius: 8px; overflow: hidden;
   }
   .hd-searchbar-mobile:focus-within { border-color: ${C.ink}; }

@@ -424,7 +424,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
           <h1 id="titre-editeur" className="page-title">
             {envoi ? `Brouillon ${referenceEnvoi(envoi)}` : 'Nouvel envoi'}
           </h1>
-          <p className="page-sub">Tu peux enregistrer et revenir plus tard, tant que l'envoi n'est pas parti.</p>
+          <p className="page-sub">Tu peux enregistrer et revenir plus tard, tant que l&apos;envoi n&apos;est pas parti.</p>
         </div>
       </div>
 
@@ -478,7 +478,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
 
         <div className="row">
           <div className="field">
-            <label className="label" htmlFor="depart">Date de départ <span className="hint">— aujourd'hui si vide</span></label>
+            <label className="label" htmlFor="depart">Date de départ <span className="hint">— aujourd&apos;hui si vide</span></label>
             <input id="depart" type="date" className="input" value={infos.date_depart}
               onChange={(e) => changerInfo('date_depart', e.target.value)} />
           </div>
@@ -491,7 +491,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
         </div>
 
         <div className="field" style={{ marginBottom: 0 }}>
-          <label className="label" htmlFor="note">Note pour l'équipe Comores <span className="hint">— facultatif</span></label>
+          <label className="label" htmlFor="note">Note pour l&apos;équipe Comores <span className="hint">— facultatif</span></label>
           <textarea id="note" className="input textarea" rows={2} value={infos.note}
             onChange={(e) => changerInfo('note', e.target.value)} placeholder="Ex : 2 cartons, le petit est fragile" />
         </div>
@@ -500,7 +500,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
       {/* ── 2. Contenu ── */}
       <div className="carte">
         <h2 className="carte-titre">2. Le contenu</h2>
-        <p className="ed-aide">Prix d'achat en <b>francs comoriens (KMF)</b>, après conversion.</p>
+        <p className="ed-aide">Prix d&apos;achat en <b>francs comoriens (KMF)</b>, après conversion.</p>
 
         <button onClick={() => setAjoutHorsCommandeOuvert(!ajoutHorsCommandeOuvert)} aria-expanded={ajoutHorsCommandeOuvert}
           className="btn-secondary ed-replier">
@@ -544,13 +544,13 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
             </p>
           )}
           {recherche.trim() && resultats.length === 0 && !rechercheDejaDansEnvoi && (
-            <p className="ed-info">Aucun produit trouvé. S'il n'existe pas encore, demande à l'admin de le créer.</p>
+            <p className="ed-info">Aucun produit trouvé. S&apos;il n&apos;existe pas encore, demande à l&apos;admin de le créer.</p>
           )}
         </div>
         )}
 
         {lignes.length === 0 ? (
-          <p className="ed-vide">Aucun produit pour l'instant. Choisis des lignes dans « À acheter », ou ajoute un produit hors commande.</p>
+          <p className="ed-vide">Aucun produit pour l&apos;instant. Choisis des lignes dans « À acheter », ou ajoute un produit hors commande.</p>
         ) : (
           <ul className="ed-lignes">
             {lignes.map((l, i) => {
@@ -589,7 +589,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
                       )}
                     </div>
                     <div>
-                      <span className="ed-mini-label">Prix d'achat / pièce</span>
+                      <span className="ed-mini-label">Prix d&apos;achat / pièce</span>
                       <input
                         className="input ed-prix"
                         inputMode="decimal"
@@ -609,7 +609,7 @@ function EditeurEnvoi({ envoi, ajouts = [], produits, onFermer, onRecharger }) {
         {lignes.length > 0 && (
           <div className="ed-total">
             <span>{lignes.length} produit{lignes.length > 1 ? 's' : ''} · {nbPieces} pièce{nbPieces > 1 ? 's' : ''}</span>
-            {coutTotal > 0 && <b>{formatKMF(coutTotal)} KMF d'achat</b>}
+            {coutTotal > 0 && <b>{formatKMF(coutTotal)} KMF d&apos;achat</b>}
           </div>
         )}
       </div>

@@ -119,7 +119,7 @@ const css = `
   .pc-currency { font-size: 13px; font-weight: 600; color: ${C.inkSoft}; }
 
   .pc-gros {
-    display: inline-block; margin-top: 8px; font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; font-size: 14px; font-weight: 600;
     color: ${C.ink}; text-decoration: underline; align-self: flex-start;
   }
 

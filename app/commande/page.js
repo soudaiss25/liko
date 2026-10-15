@@ -196,8 +196,8 @@ export default function PageCommande() {
           <div className="cm-bloc cm-prochaine">
             <h2>La suite</h2>
             <p>
-              Nous t'appelons au <b>{confirmation.telephone}</b> pour confirmer ta commande.
-              Rien n'est acheté avant cet appel.
+              Nous t&apos;appelons au <b>{confirmation.telephone}</b> pour confirmer ta commande.
+              Rien n&apos;est acheté avant cet appel.
             </p>
           </div>
 
@@ -209,7 +209,7 @@ export default function PageCommande() {
               <button onClick={copierLien} className="cm-btn-secondaire">{copie ? <><Icone icone={Check} taille={18} /> Lien copié</> : 'Copier le lien'}</button>
               <a className="cm-btn-secondaire" target="_blank" rel="noopener noreferrer"
                 href={lienWhatsApp(confirmation.telephone, `Mon suivi de commande ${referenceCommande(confirmation.numero)} : ${lien}`)}>
-                M'envoyer le lien sur WhatsApp
+                M&apos;envoyer le lien sur WhatsApp
               </a>
             </div>
           </div>
@@ -299,7 +299,7 @@ export default function PageCommande() {
             <div className="cm-bloc-tete">
               <h2 id="t-coord">Tes coordonnées</h2>
               {!compte && (
-                <a href="/login?suite=/commande" className="cm-lien-simple">J'ai un compte</a>
+                <a href="/login?suite=/commande" className="cm-lien-simple">J&apos;ai un compte</a>
               )}
             </div>
             {compte && <p className="cm-aide">Connecté : tes informations sont pré-remplies, tu peux les modifier pour cette livraison.</p>}
@@ -377,7 +377,7 @@ export default function PageCommande() {
               <span className="cm-paiement-coche" aria-hidden="true"><Icone icone={Check} taille={18} /></span>
               <div>
                 <b>Paiement à la livraison</b>
-                <span>En espèces, quand tu reçois ta commande. Rien à payer aujourd'hui.</span>
+                <span>En espèces, quand tu reçois ta commande. Rien à payer aujourd&apos;hui.</span>
               </div>
             </div>
           </section>
@@ -446,7 +446,7 @@ const css = `
     padding: 10px 16px; position: sticky; top: 0; z-index: 20;
   }
   .cm-retour { font-size: 15px; font-weight: 700; color: ${C.ink}; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; gap: 4px; }
-  .cm-logo { width: 38px; height: 38px; object-fit: contain; display: block; }
+  .cm-logo { width: 44px; height: 44px; object-fit: contain; display: block; }
   .cm-barre-droite { justify-self: end; font-size: 13px; font-weight: 600; color: ${C.inkSoft}; text-align: right; }
 
   .cm-etat { max-width: 560px; margin: 0 auto; padding: 24px 16px; }

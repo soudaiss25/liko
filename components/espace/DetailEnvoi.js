@@ -104,7 +104,7 @@ export default function DetailEnvoi({ envoi, lignes, afficherPrix = false, onRet
           ) : (
             <span>{envoye} pièce{envoye > 1 ? 's' : ''} au total</span>
           )}
-          {afficherPrix && coutTotal > 0 && <b>{formatKMF(coutTotal)} KMF d'achat</b>}
+          {afficherPrix && coutTotal > 0 && <b>{formatKMF(coutTotal)} KMF d&apos;achat</b>}
         </div>
       </div>
 
