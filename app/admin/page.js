@@ -58,7 +58,8 @@ export default function Admin() {
     setAlerteDonnees('')
 
     const [resProduits, resCommandes, resItems] = await Promise.all([
-      supabase.from('produits').select('*').order('created_at', { ascending: false }),
+      // Guichet réservé à l'admin : toutes les colonnes (prix d'achat compris), du plus récent au plus ancien
+      supabase.rpc('produits_admin'),
       supabase.from('commandes').select('id, statut, ile, montant_total, created_at'),
       supabase.from('commande_items').select('commande_id, produit_id, quantite, prix_unitaire'),
     ])

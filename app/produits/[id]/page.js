@@ -43,7 +43,11 @@ export default function FicheProduit() {
   useEffect(() => {
     const charger = async () => {
       setChargement(true)
-      const { data: p } = await supabase.from('produits').select('*').eq('id', id).single()
+      const { data: p } = await supabase.from('produits')
+        // Colonnes listées une à une : jamais de prix d'achat côté visiteur
+        .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, images')
+        .eq('id', id)
+        .single()
       setProduit(p)
       setPhotoActive(0)
 
