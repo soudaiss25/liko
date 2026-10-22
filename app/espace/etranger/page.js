@@ -57,7 +57,8 @@ function EspaceEtranger() {
     setChargement(true)
     const [resEnvois, resProduits, resAchats] = await Promise.all([
       supabase.rpc('envois_etranger'),
-      supabase.from('produits').select('id, nom, categorie, images, actif, prix_achat').order('nom'),
+      // Guichet réservé au collaborateur étranger (et à l'admin) : id, nom, categorie, images, actif, prix_achat
+      supabase.rpc('produits_etranger'),
       supabase.rpc('lignes_a_acheter'),
     ])
     const erreurChargement = resEnvois.error || resProduits.error || resAchats.error
