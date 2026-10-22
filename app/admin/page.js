@@ -16,7 +16,10 @@
 */
 
 import { useState, useEffect } from 'react'
+import { LayoutDashboard, ClipboardList, Package, Users, Lock, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
+import Icone from '@/components/ui/Icone'
+import { ChargementListe } from '@/components/ui/Squelette'
 import { useGardeAcces } from '@/lib/garde'
 import { supprimerPhotosProduit } from '@/lib/photos'
 import { calculerVentes } from '@/lib/ventes'
@@ -26,14 +29,7 @@ import FormulaireProduit from '@/components/admin/FormulaireProduit'
 import Collaborateurs from '@/components/admin/Collaborateurs'
 import Commandes from '@/components/admin/Commandes'
 
-const C = {
-  ink: '#1D4E63', inkDeep: '#143A4B', inkSoft: '#6E8A97',
-  sand: '#F4F1EA', line: '#E4DED2',
-  gold: '#E8A020', goldDeep: '#C6851A',
-  leaf: '#3E9268', clay: '#C2574A', white: '#FFFFFF',
-  bgGrey: '#F2F3F5',
-}
-
+import { C } from '@/lib/theme'
 export default function Admin() {
   const supabase = createClient()
 
@@ -130,7 +126,7 @@ export default function Admin() {
     return (
       <div className="app">
         <style>{css}</style>
-        <div className="state">Vérification de l'accès…</div>
+        <div className="state"><ChargementListe nb={2} hauteur={72} /></div>
       </div>
     )
   }
@@ -141,10 +137,10 @@ export default function Admin() {
       <div className="app">
         <style>{css}</style>
         <div className="refuse-box">
-          <div className="refuse-emoji">🔒</div>
+          <div className="refuse-emoji"><Icone icone={Lock} taille={32} /></div>
           <h1 className="refuse-title">Accès réservé</h1>
           <p className="refuse-sub">Cette page est réservée aux administrateurs de Salut Marketplace.</p>
-          <a href="/" className="refuse-btn">Retour à l'accueil</a>
+          <a href="/" className="refuse-btn">Retour à l&apos;accueil</a>
         </div>
       </div>
     )
@@ -168,7 +164,7 @@ export default function Admin() {
             </div>
           </div>
           <div className="admin-actions">
-            <a href="/" className="admin-link">Voir le site →</a>
+            <a href="/" className="admin-link">Voir le site <Icone icone={ExternalLink} taille={16} /></a>
             <button onClick={deconnexion} className="admin-logout">Déconnexion</button>
           </div>
         </div>
@@ -181,14 +177,14 @@ export default function Admin() {
               aria-current={ongletActif === 'dashboard' ? 'page' : undefined}
               className={`admin-tab ${ongletActif === 'dashboard' ? 'admin-tab-on' : ''}`}
             >
-              📊 Tableau de bord
+              <Icone icone={LayoutDashboard} taille={18} /> Tableau de bord
             </button>
             <button
               onClick={() => allerA('commandes')}
               aria-current={ongletActif === 'commandes' ? 'page' : undefined}
               className={`admin-tab ${ongletActif === 'commandes' ? 'admin-tab-on' : ''}`}
             >
-              🛎️ Commandes
+              <Icone icone={ClipboardList} taille={18} /> Commandes
               {aConfirmer > 0 && <span className="admin-tab-nb admin-tab-alerte">{aConfirmer}</span>}
             </button>
             <button
@@ -196,14 +192,14 @@ export default function Admin() {
               aria-current={ongletActif === 'produits' ? 'page' : undefined}
               className={`admin-tab ${ongletActif === 'produits' ? 'admin-tab-on' : ''}`}
             >
-              📦 Produits <span className="admin-tab-nb">{produits.length}</span>
+              <Icone icone={Package} taille={18} /> Produits <span className="admin-tab-nb">{produits.length}</span>
             </button>
             <button
               onClick={() => allerA('collaborateurs')}
               aria-current={ongletActif === 'collaborateurs' ? 'page' : undefined}
               className={`admin-tab ${ongletActif === 'collaborateurs' ? 'admin-tab-on' : ''}`}
             >
-              🤝 Collaborateurs
+              <Icone icone={Users} taille={18} /> Collaborateurs
             </button>
           </div>
         </nav>
@@ -217,7 +213,7 @@ export default function Admin() {
         ) : vue === 'commandes' ? (
           <Commandes onChange={chargerDonnees} />
         ) : chargementDonnees && produits.length === 0 ? (
-          <div className="state">Chargement…</div>
+          <div className="state"><ChargementListe nb={3} hauteur={96} /></div>
         ) : vue === 'dashboard' ? (
           <Dashboard
             produits={produits}
@@ -247,7 +243,6 @@ export default function Admin() {
           />
         )}
 
-        <div style={{ height: '40px' }} />
       </main>
     </div>
   )
@@ -257,118 +252,109 @@ export default function Admin() {
    Ici : uniquement le style COMMUN à tout l'admin (barre, onglets, boutons, champs).
    Chaque composant (Dashboard, ListeProduits, FormulaireProduit) apporte son propre style. */
 const css = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
   * { box-sizing: border-box; }
 
   .app {
     background: ${C.bgGrey}; min-height: 100vh;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: var(--font-jakarta), system-ui, sans-serif;
     color: ${C.inkDeep};
   }
 
-  .state { text-align: center; padding: 100px 20px; color: ${C.inkSoft}; font-size: 15px; }
-
-  /* Cache un élément à l'écran mais le garde accessible (lecteurs d'écran, clavier) */
-  .visually-hidden {
-    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
-  }
+  .state { padding: 24px 0; color: ${C.inkSoft}; font-size: 15px; }
 
   /* ── Accès refusé ── */
-  .refuse-box { max-width: 420px; margin: 100px auto; text-align: center; padding: 20px; }
-  .refuse-emoji { font-size: 50px; margin-bottom: 14px; }
-  .refuse-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-  .refuse-sub { font-size: 14px; color: ${C.inkSoft}; margin-bottom: 22px; }
+  .refuse-box { max-width: 420px; margin: 64px auto; text-align: center; padding: 16px; color: ${C.inkSoft}; }
+  .refuse-emoji { margin-bottom: 16px; }
+  .refuse-title { font-size: 24px; font-weight: 800; margin: 0 0 8px; color: ${C.inkDeep}; }
+  .refuse-sub { font-size: 16px; color: ${C.inkSoft}; margin: 0 0 24px; line-height: 1.5; }
   .refuse-btn {
-    display: inline-block; background: ${C.ink}; color: #fff; text-decoration: none;
-    padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px;
+    display: inline-flex; align-items: center; min-height: 44px; background: ${C.ink}; color: ${C.white}; text-decoration: none;
+    padding: 0 24px; border-radius: 8px; font-weight: 700; font-size: 15px;
   }
 
   /* ── Barre admin ── */
   .admin-header { background: ${C.inkDeep}; position: sticky; top: 0; z-index: 30; }
   .admin-header-inner {
-    max-width: 1100px; margin: 0 auto; padding: 14px 20px 10px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    max-width: 1100px; margin: 0 auto; padding: 12px 16px 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   }
   .admin-brand { display: flex; align-items: center; gap: 12px; }
-  .admin-logo { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 8px; padding: 3px; }
-  .admin-title { font-size: 15px; font-weight: 800; color: #fff; }
-  .admin-sub { font-size: 12px; color: rgba(255,255,255,0.6); }
-  .admin-actions { display: flex; align-items: center; gap: 14px; }
-  .admin-link { font-size: 13px; color: ${C.gold}; text-decoration: none; font-weight: 600; }
-  .admin-logout {
-    background: rgba(255,255,255,0.1); border: none; color: #fff; cursor: pointer;
-    padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit;
+  .admin-logo { width: 40px; height: 40px; object-fit: contain; background: ${C.white}; border-radius: 8px; padding: 4px; }
+  .admin-title { font-size: 16px; font-weight: 800; color: ${C.white}; }
+  .admin-sub { font-size: 14px; color: rgba(255,255,255,0.75); }
+  .admin-actions { display: flex; align-items: center; gap: 8px; }
+  .admin-link {
+    font-size: 14px; color: ${C.white}; text-decoration: underline; font-weight: 600;
+    min-height: 44px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px;
   }
-  .admin-logout:hover { background: rgba(255,255,255,0.18); }
+  .admin-logout {
+    background: rgba(255,255,255,0.12); border: none; color: ${C.white}; cursor: pointer;
+    min-height: 44px; padding: 0 16px; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .admin-logout:hover { background: rgba(255,255,255,0.2); }
 
   /* ── Onglets ── */
   .admin-tabs-inner {
-    max-width: 1100px; margin: 0 auto; padding: 0 20px;
+    max-width: 1100px; margin: 0 auto; padding: 0 8px;
     display: flex; gap: 4px; overflow-x: auto;
   }
   .admin-tab {
     background: none; border: none; cursor: pointer; font-family: inherit;
-    font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6);
-    padding: 12px 14px; border-bottom: 3px solid transparent; white-space: nowrap;
+    font-size: 15px; font-weight: 700; color: rgba(255,255,255,0.75);
+    min-height: 48px; padding: 0 12px; border-bottom: 3px solid transparent; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 8px;
   }
-  .admin-tab:hover { color: #fff; }
-  .admin-tab-on { color: #fff; border-bottom-color: ${C.gold}; }
+  .admin-tab:hover { color: ${C.white}; }
+  .admin-tab-on { color: ${C.white}; border-bottom-color: ${C.white}; }
   .admin-tab-nb {
-    font-size: 11px; background: rgba(255,255,255,0.15); padding: 2px 7px; border-radius: 10px; margin-left: 4px;
+    font-size: 13px; background: rgba(255,255,255,0.18); padding: 2px 8px; border-radius: 6px;
   }
-  .admin-tab-alerte { background: ${C.gold}; color: ${C.inkDeep}; font-weight: 800; }
+  .admin-tab-alerte { background: ${C.clay}; color: ${C.white}; font-weight: 800; }
 
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
 
   /* ── Éléments communs utilisés par tous les composants admin ── */
   .page-head {
     display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 14px; margin-bottom: 18px; flex-wrap: wrap;
+    gap: 12px; margin-bottom: 16px; flex-wrap: wrap;
   }
-  .page-title { font-size: 22px; font-weight: 800; color: ${C.inkDeep}; margin: 0; }
-  .page-sub { font-size: 13px; color: ${C.inkSoft}; margin: 4px 0 0; }
+  .page-title { font-size: 24px; font-weight: 800; color: ${C.inkDeep}; margin: 0; }
+  .page-sub { font-size: 15px; color: ${C.inkSoft}; margin: 4px 0 0; }
 
-  .btn-primary {
-    background: ${C.ink}; color: #fff; border: none; cursor: pointer;
-    padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit;
-    white-space: nowrap;
+  .btn-primary, .btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 16px; border-radius: 8px; cursor: pointer;
+    font-size: 15px; font-weight: 700; font-family: inherit; white-space: nowrap; text-decoration: none;
   }
+  .btn-primary { background: ${C.ink}; color: ${C.white}; border: none; }
   .btn-primary:hover { background: ${C.inkDeep}; }
-  .btn-primary:disabled { background: ${C.line}; color: #A9B4B9; cursor: not-allowed; }
-  .btn-secondary {
-    background: #fff; color: ${C.inkSoft}; border: 1.5px solid ${C.line}; cursor: pointer;
-    padding: 11px 18px; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: inherit;
-  }
-  .btn-secondary:hover { border-color: ${C.inkSoft}; color: ${C.inkDeep}; }
+  .btn-primary:disabled { background: ${C.line}; color: ${C.inkSoft}; cursor: not-allowed; }
+  .btn-secondary { background: ${C.white}; color: ${C.inkDeep}; border: 1.5px solid ${C.line}; }
+  .btn-secondary:hover { border-color: ${C.inkSoft}; }
 
-  .field { margin-bottom: 18px; }
-  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .label { display: block; font-size: 13px; font-weight: 700; color: ${C.inkDeep}; margin-bottom: 8px; }
-  .optional { font-weight: 500; color: ${C.inkSoft}; font-size: 11.5px; }
+  .field { margin-bottom: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .label { display: block; font-size: 15px; font-weight: 700; color: ${C.inkDeep}; margin-bottom: 8px; }
+  .optional { font-weight: 500; color: ${C.inkSoft}; font-size: 14px; }
 
   .input {
-    width: 100%; padding: 0 14px; height: 46px; border-radius: 10px;
-    border: 1.5px solid ${C.line}; background: ${C.sand}; font-size: 14px; font-family: inherit;
+    width: 100%; padding: 0 16px; min-height: 48px; border-radius: 8px;
+    border: 1.5px solid ${C.line}; background: ${C.sand}; font-size: 16px; font-family: inherit;
     color: ${C.inkDeep}; outline: none;
   }
-  .input:focus { border-color: ${C.ink}; background: #fff; }
-  .textarea { height: auto; padding: 12px 14px; resize: vertical; }
+  .input:focus { border-color: ${C.ink}; background: ${C.white}; }
+  .textarea { height: auto; padding: 12px 16px; resize: vertical; }
 
-  .checkbox-row { display: flex; align-items: center; gap: 10px; font-size: 14px; color: ${C.inkDeep}; cursor: pointer; }
-  .checkbox-row input { width: 18px; height: 18px; cursor: pointer; }
+  .checkbox-row { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 15px; color: ${C.inkDeep}; cursor: pointer; }
+  .checkbox-row input { width: 20px; height: 20px; cursor: pointer; accent-color: ${C.ink}; }
 
   .err {
-    font-size: 13px; color: ${C.clay}; background: #FBF0EE; border: 1px solid #F0D9D5;
-    border-radius: 10px; padding: 10px 12px; margin: 0 0 14px;
+    font-size: 15px; color: #a8453a; background: #fbf0ee; border: 1px solid #efd4cf;
+    border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.45;
   }
-
-  button:focus-visible, a:focus-visible, .input:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 2px; }
 
   @media (max-width: 700px) {
     .row { grid-template-columns: 1fr; }
-    .admin-header-inner { padding: 12px 16px 8px; }
     .admin-sub { display: none; }
-    .wrap { padding: 18px 14px; }
   }
 `

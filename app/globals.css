@@ -1,26 +1,114 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f2f3f5;
+  --foreground: #143a4b;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-jakarta);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
+  font-size: 16px;
 }
+
+/* Le focus clavier doit toujours se voir */
+:focus-visible {
+  outline: 2px solid #1d4e63;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ═════════ Composants communs (components/ui) ═════════
+   Échelle d'espacement : 4, 8, 12, 16, 24, 32, 48. Rayon : 8 px (12 px max pour les grandes cartes).
+   Pas d'ombre, pas de dégradé. */
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Squelette de chargement */
+.ui-sk { display: block; background: #e4e7ea; animation: ui-pulse 1.4s ease-in-out infinite; }
+.ui-chargement { display: flex; flex-direction: column; gap: 12px; }
+@keyframes ui-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+/* État vide / erreur */
+.ui-vide {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+  padding: 48px 16px; color: #587380; font-size: 15px;
+}
+.ui-vide p { margin: 0; max-width: 360px; line-height: 1.5; }
+
+/* Boutons */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 16px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+  font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: none;
+  border: 1.5px solid transparent;
+}
+.ui-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+.ui-btn-achat { background: #e8a020; color: #143a4b; }
+.ui-btn-achat:hover:not(:disabled) { background: #c6851a; }
+.ui-btn-principal { background: #1d4e63; color: #fff; }
+.ui-btn-principal:hover:not(:disabled) { background: #143a4b; }
+.ui-btn-secondaire { background: #fff; color: #143a4b; border-color: #e4ded2; }
+.ui-btn-secondaire:hover:not(:disabled) { border-color: #587380; }
+.ui-btn-danger { background: #fff; color: #c2574a; border-color: #e9c9c4; }
+.ui-btn-danger:hover:not(:disabled) { background: #fbf0ee; }
+.ui-btn-texte { background: none; color: #1d4e63; padding: 0 8px; text-decoration: underline; }
+.ui-btn-grand { width: 100%; min-height: 52px; font-size: 16px; }
+
+/* Badges */
+.ui-badge {
+  display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 8px;
+  border-radius: 6px; white-space: nowrap;
+}
+.ui-badge-gris { background: #edeff1; color: #55707d; }
+.ui-badge-bleu { background: #e3eef3; color: #1d4e63; }
+.ui-badge-or { background: #fbf0d9; color: #8a5a0b; }
+.ui-badge-vert { background: #e6f3ec; color: #2c6e4d; }
+.ui-badge-rouge { background: #fbeceb; color: #a8453a; }
+
+/* Champs de formulaire */
+.ui-champ { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; min-width: 0; }
+.ui-label { font-size: 15px; font-weight: 700; color: #143a4b; }
+.ui-optionnel { font-weight: 500; color: #587380; }
+.ui-aide { font-size: 14px; color: #587380; margin: 0; line-height: 1.45; }
+.ui-erreur-champ { font-size: 14px; color: #c2574a; font-weight: 700; margin: 0; }
+/* 16 px minimum : sinon certains navigateurs zooment tout seuls sur le champ */
+.ui-input {
+  width: 100%; min-height: 48px; padding: 0 16px; border-radius: 8px;
+  border: 1.5px solid #e4ded2; background: #f4f1ea; color: #143a4b;
+  font-size: 16px; font-family: inherit;
+}
+.ui-input:focus { border-color: #1d4e63; background: #fff; outline: none; }
+.ui-input[aria-invalid="true"] { border-color: #c2574a; background: #fbf0ee; }
+textarea.ui-input { padding: 12px 16px; line-height: 1.45; resize: vertical; }
+
+/* Messages */
+.ui-msg { font-size: 15px; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.45; }
+.ui-msg-err { background: #fbf0ee; color: #a8453a; border: 1px solid #efd4cf; }
+.ui-msg-ok { background: #e6f3ec; color: #2c6e4d; border: 1px solid #cde5d8; }
+.ui-msg-info { background: #fff; color: #143a4b; border: 1px solid #e4ded2; }
+
+/* Page d'authentification */
+.ui-auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px 48px; }
+.ui-auth-marque { display: flex; align-items: center; gap: 8px; text-decoration: none; margin-bottom: 24px; min-height: 44px; }
+.ui-auth-marque img { width: 64px; height: 64px; object-fit: contain; }
+.ui-auth-marque span { font-size: 24px; font-weight: 800; color: #1d4e63; }
+.ui-auth-carte { width: 100%; max-width: 440px; background: #fff; border: 1px solid #e4ded2; border-radius: 12px; padding: 24px 16px; }
+.ui-auth-titre { font-size: 24px; font-weight: 800; color: #143a4b; margin: 0 0 8px; }
+.ui-auth-sous { font-size: 15px; color: #587380; margin: 0 0 24px; line-height: 1.45; }
+.ui-auth-liens { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 16px; font-size: 15px; color: #587380; text-align: center; }
+.ui-auth-liens a { color: #1d4e63; font-weight: 700; min-height: 44px; display: inline-flex; align-items: center; }
+@media (min-width: 480px) { .ui-auth-carte { padding: 32px 24px; } }
