@@ -1,5 +1,11 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Règles du projet
+
+- **Prix d'achat privé.** La colonne `prix_achat` est privée. Ne jamais faire `select('*')` sur `produits`. Après l'ajout d'une colonne à `produits`, relancer l'étape 2 de la migration 07 (`supabase/migrations/07_prix-achat-prive.sql`) pour que le site puisse la lire.
+  - L'admin lit les produits avec `supabase.rpc('produits_admin')`, le collaborateur étranger avec `supabase.rpc('produits_etranger')`.
+  - Le test `tests/securite.test.js` échoue si une lecture publique risque de laisser fuir le prix d'achat.
+
 ## Getting Started
 
 First, run the development server:
