@@ -14,6 +14,8 @@
 */
 
 import { createClient } from '@supabase/supabase-js'
+import { ipClient, limiter, MESSAGE_LIMITE_HEURE } from '@/lib/limiteur'
+import { schemaRegister, validerCorps, REQUETE_INVALIDE } from '@/lib/schemas'
 
 const USERNAME_VALIDE = /^[a-z0-9_.]{3,20}$/
 const EMAIL_VALIDE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -27,12 +29,17 @@ const erreur = (message, status = 400) => Response.json({ error: message }, { st
 
 export async function POST(request) {
   try {
+    // 0. Anti abus : 5 inscriptions par heure et par adresse IP
+    const supabase = service()
+    if (!(await limiter(supabase, `register:ip:${ipClient(request)}`, 5, 3600))) {
+      return erreur(MESSAGE_LIMITE_HEURE, 429)
+    }
+
     // 1. Jeton présent ?
     const jeton = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '').trim()
     if (!jeton) return erreur('Non connecté.', 401)
 
     // 2. Jeton valide ?
-    const supabase = service()
     const { data: { user } = {}, error: erreurJeton } = await supabase.auth.getUser(jeton)
     if (erreurJeton || !user) return erreur('Session expirée, reconnecte-toi.', 401)
 
@@ -43,7 +50,11 @@ export async function POST(request) {
     const telephone = user.phone.startsWith('+') ? user.phone : `+${user.phone}`
 
     // 4. Validation des champs
-    const corps = await request.json().catch(() => ({}))
+    let corpsBrut
+    try { corpsBrut = await request.json() } catch { return erreur(REQUETE_INVALIDE) }
+    const verif = validerCorps(schemaRegister, corpsBrut)
+    if (!verif.ok) return erreur(verif.message)
+    const corps = verif.donnees
     const prenom = String(corps.prenom || '').trim()
     const nom = String(corps.nom || '').trim()
     const adresse = String(corps.adresse || '').trim()

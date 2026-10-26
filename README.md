@@ -6,6 +6,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
   - L'admin lit les produits avec `supabase.rpc('produits_admin')`, le collaborateur étranger avec `supabase.rpc('produits_etranger')`.
   - Le test `tests/securite.test.js` échoue si une lecture publique risque de laisser fuir le prix d'achat.
 
+- **Sécurité de la table `users`.** Le navigateur ne peut PLUS écrire dans la table `users` (ni insert, ni update). Toute écriture de profil passe par une route serveur avec le client `service_role`, comme `/api/register`. N'écris jamais de code navigateur qui fait `from('users').insert` ou `.update` (migration 09).
+- **Fonctions de rôle.** `est_admin()` et `mon_role()` ne sont plus appelables par un visiteur non connecté (migration 10).
+
 ## Getting Started
 
 First, run the development server:

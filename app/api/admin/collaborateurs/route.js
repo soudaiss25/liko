@@ -18,6 +18,10 @@
 */
 
 import { createClient } from '@supabase/supabase-js'
+import { limiter, MESSAGE_LIMITE_ADMIN } from '@/lib/limiteur'
+import {
+  schemaCollaborateurCreation, schemaCollaborateurModification, validerCorps, REQUETE_INVALIDE,
+} from '@/lib/schemas'
 
 const ROLES_COLLAB = ['collab_etranger', 'collab_comores']
 const MDP_MIN = 8
@@ -55,6 +59,11 @@ async function verifierAdmin(request) {
   const { data: profil } = await admin.from('users').select('role').eq('id', user.id).single()
   if (profil?.role !== 'admin') return { refus: erreur('Réservé à l\u2019administrateur.', 403) }
 
+  // Anti abus : 30 requêtes par minute et par admin
+  if (!(await limiter(admin, `admin:${user.id}`, 30, 60))) {
+    return { refus: erreur(MESSAGE_LIMITE_ADMIN, 429) }
+  }
+
   return { admin, idAdmin: user.id }
 }
 
@@ -78,8 +87,11 @@ export async function POST(request) {
   const { admin, refus } = await verifierAdmin(request)
   if (refus) return refus
 
-  let corps
-  try { corps = await request.json() } catch { return erreur('Requête invalide.') }
+  let corpsBrut
+  try { corpsBrut = await request.json() } catch { return erreur(REQUETE_INVALIDE) }
+  const verif = validerCorps(schemaCollaborateurCreation, corpsBrut)
+  if (!verif.ok) return erreur(verif.message)
+  const corps = verif.donnees
 
   const role = corps.role
   if (!ROLES_COLLAB.includes(role)) return erreur('Choisis le type de collaborateur.')
@@ -152,8 +164,11 @@ export async function PATCH(request) {
   const { admin, idAdmin, refus } = await verifierAdmin(request)
   if (refus) return refus
 
-  let corps
-  try { corps = await request.json() } catch { return erreur('Requête invalide.') }
+  let corpsBrut
+  try { corpsBrut = await request.json() } catch { return erreur(REQUETE_INVALIDE) }
+  const verif = validerCorps(schemaCollaborateurModification, corpsBrut)
+  if (!verif.ok) return erreur(verif.message)
+  const corps = verif.donnees
 
   const { id, action } = corps
   if (!id) return erreur('Collaborateur manquant.')
