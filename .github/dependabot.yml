@@ -1,0 +1,27 @@
+# Mises à jour automatiques des dépendances : une PR par semaine et par écosystème,
+# vers develop. Les mises à jour mineures et les correctifs sont regroupés en une seule PR ;
+# les changements majeurs arrivent séparément, pour être relus un par un.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      mineures-et-correctifs:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    groups:
+      mineures-et-correctifs:
+        update-types:
+          - minor
+          - patch

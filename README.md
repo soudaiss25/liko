@@ -9,6 +9,31 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 - **Sécurité de la table `users`.** Le navigateur ne peut PLUS écrire dans la table `users` (ni insert, ni update). Toute écriture de profil passe par une route serveur avec le client `service_role`, comme `/api/register`. N'écris jamais de code navigateur qui fait `from('users').insert` ou `.update` (migration 09).
 - **Fonctions de rôle.** `est_admin()` et `mon_role()` ne sont plus appelables par un visiteur non connecté (migration 10).
 
+## Pipeline
+
+```
+ agent / développeur          GitHub Actions (CI)                  Vercel                 relecture          fusion
+ ─────────────────────        ───────────────────────────          ──────────────         ──────────         ─────────
+ branche mission-xyz   ──▶    qualite  : tests, build, lint   ──▶  prévisualisation  ──▶  le développeur ──▶ PR → develop
+ + PR vers develop            securite : gitleaks, npm audit,      de la branche          ouvre la           (jamais main
+                                         migrations SQL            │                      prévisualisation,   avant la fin
+                                                                   ▼                      lit la PR           du développement)
+                                                          test de fumée (fumee.yml)
+```
+
+| Qui | Rôle |
+|---|---|
+| **Agent** (ou développeur) | Crée une branche par mission depuis `develop`, pousse après chaque tâche, ouvre une PR **vers `develop`** avec le modèle de PR rempli. Ne fusionne jamais. |
+| **CI** (`.github/workflows/ci.yml`) | Deux jobs en parallèle. `qualite` : tests, build (variables factices), lint (non bloquant). `securite` : détection de secrets (gitleaks, historique complet de la PR), `npm audit` (échec sur faille haute ou critique des dépendances de production), vérification des migrations SQL (`scripts/verifier-migrations.mjs`). Une nouvelle exécution annule la précédente sur la même branche. Elle ne déploie rien. |
+| **Vercel** | Déploie lui-même chaque branche en prévisualisation. Les variables d'environnement (publiques et secrètes) se règlent dans Vercel, jamais dans le dépôt. |
+| **Test de fumée** (`.github/workflows/fumee.yml`) | Après chaque prévisualisation réussie (pas la production) : `/`, `/panier`, `/login` répondent 200, une page inexistante 404, `POST /api/register` sans jeton 401, et les en-têtes `Strict-Transport-Security` et `X-Frame-Options` sont présents. Demande le secret GitHub `VERCEL_AUTOMATION_BYPASS_SECRET` ; sans lui, il est ignoré. |
+| **Relecture** | Le développeur ouvre la prévisualisation, relit la PR (résumé, captures, cases cochées) et vérifie que les contrôles sont verts. |
+| **Fusion** | Le développeur seul fusionne dans `develop`. `main` n'est touchée qu'à la fin du développement. Si la PR contient une migration SQL, il la lance en base. |
+
+Dependabot (`.github/dependabot.yml`) propose chaque semaine, vers `develop`, une PR groupée de mises à jour (mineures et correctifs) pour npm et pour les actions GitHub.
+
+**Migrations SQL** (`supabase/migrations/`) : format `NN_nom-en-minuscules.sql`, suite sans trou ni doublon, jamais de `DROP TABLE`, `TRUNCATE` ou `DELETE FROM` sans le commentaire `-- DESTRUCTIF ASSUMÉ` sur la ligne juste au-dessus, jamais de clé secrète. Vérification locale : `node scripts/verifier-migrations.mjs`. Node 22 partout (`.nvmrc`, `engines`).
+
 ## Getting Started
 
 First, run the development server:

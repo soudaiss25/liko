@@ -1,0 +1,100 @@
+# Test de fumée : après chaque déploiement de PRÉVISUALISATION réussi (jamais la production),
+# on appelle l'adresse déployée par Vercel et on vérifie que le site répond comme prévu.
+#
+# Secret requis : VERCEL_AUTOMATION_BYPASS_SECRET (Vercel → Settings → Deployment Protection →
+# "Protection Bypass for Automation"). Sans lui, le test est simplement ignoré (skipped).
+#
+# Note : sur les prévisualisations, Vercel ajoute sa barre d'outils (domaine vercel.live) que la
+# politique CSP du site bloque dans un navigateur. Ce n'est pas une erreur du site, et ce test
+# (des requêtes HTTP, pas un navigateur) n'est pas concerné.
+
+name: Test de fumée
+
+on:
+  deployment_status
+
+permissions:
+  contents: read
+
+jobs:
+  secret:
+    name: Secret de contournement présent ?
+    # Seulement pour un déploiement réussi, et jamais pour la production
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment != 'Production'
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.verifier.outputs.present }}
+    steps:
+      - id: verifier
+        env:
+          SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          if [ -z "$SECRET" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Le secret VERCEL_AUTOMATION_BYPASS_SECRET n'existe pas : test de fumée ignoré."
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  fumee:
+    name: Test de fumée de la prévisualisation
+    needs: secret
+    if: needs.secret.outputs.present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      URL_PREVISUALISATION: ${{ github.event.deployment_status.target_url }}
+      BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Vérifier la prévisualisation
+        run: |
+          set -u
+          BASE="${URL_PREVISUALISATION%/}"
+          echo "Prévisualisation : $BASE"
+          ECHECS=0
+
+          # code_http <méthode> <chemin> → affiche le code HTTP (3 essais : la prévisualisation peut mettre quelques secondes à répondre)
+          code_http() {
+            local code="000"
+            for essai in 1 2 3; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 -X "$1" \
+                -H "x-vercel-protection-bypass: $BYPASS" "$BASE$2")
+              case "$code" in 000|502|503|504) sleep 5 ;; *) break ;; esac
+            done
+            echo "$code"
+          }
+
+          verifier_code() { # <méthode> <chemin> <code attendu> <aide>
+            local code
+            code=$(code_http "$1" "$2")
+            if [ "$code" = "$3" ]; then
+              echo "OK    $1 $2 -> $code"
+            else
+              echo "ECHEC $1 $2 -> $code (attendu $3). $4"
+              ECHECS=$((ECHECS + 1))
+            fi
+          }
+
+          verifier_code GET  /                          200 ""
+          verifier_code GET  /panier                    200 ""
+          verifier_code GET  /login                     200 ""
+          verifier_code GET  /page-inexistante-fumee    404 ""
+          verifier_code POST /api/register              401 "Un 500 signifie souvent que SUPABASE_SERVICE_ROLE_KEY manque dans les variables Preview de Vercel."
+
+          # En-têtes de sécurité sur "/"
+          EN_TETES=$(curl -s -D - -o /dev/null --max-time 20 -H "x-vercel-protection-bypass: $BYPASS" "$BASE/")
+          for en_tete in strict-transport-security x-frame-options; do
+            if echo "$EN_TETES" | grep -qi "^$en_tete:"; then
+              echo "OK    en-tête $en_tete présent sur /"
+            else
+              echo "ECHEC en-tête $en_tete absent sur /"
+              ECHECS=$((ECHECS + 1))
+            fi
+          done
+
+          if [ "$ECHECS" -gt 0 ]; then
+            echo "::error::$ECHECS vérification(s) en échec sur la prévisualisation."
+            exit 1
+          fi
+          echo "Toutes les vérifications sont passées."
