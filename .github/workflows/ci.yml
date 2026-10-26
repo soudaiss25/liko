@@ -1,5 +1,5 @@
-# Intégration continue : VÉRIFIE seulement (tests + build + lint).
-# Le déploiement est géré par l'intégration GitHub de Vercel.
+# Intégration continue : VÉRIFIE seulement. Deux jobs en parallèle.
+# Le déploiement est fait par l'intégration GitHub de Vercel (jamais depuis ici).
 
 name: CI
 
@@ -8,6 +8,7 @@ on:
     branches: [develop, main]
   pull_request:
 
+# Une nouvelle exécution sur la même branche annule la précédente
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -16,15 +17,15 @@ permissions:
   contents: read
 
 jobs:
-  verifier:
-    name: Tests, build et lint
+  qualite:
+    name: Qualité (tests, build, lint)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: npm
 
       - run: npm ci
@@ -43,3 +44,34 @@ jobs:
       - name: Lint
         run: npx eslint .
         continue-on-error: true
+
+  securite:
+    name: Sécurité (secrets, dépendances, migrations)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tout l'historique, pour que gitleaks lise tous les commits de la PR
+
+      # Détection de secrets : échoue si une clé est trouvée
+      - name: Détection de secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Échoue sur une faille haute ou critique des dépendances de production
+      - name: Audit des dépendances
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Vérification des migrations SQL
+        run: node scripts/verifier-migrations.mjs
