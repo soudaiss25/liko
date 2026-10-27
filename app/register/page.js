@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
+import { usernameValide, MESSAGE_USERNAME } from '@/lib/username'
 import CadreAuth from '@/components/ui/CadreAuth'
 import Champ, { Message } from '@/components/ui/Champ'
 import Bouton from '@/components/ui/Bouton'
@@ -51,7 +52,7 @@ export default function Register() {
   const validerEtape1 = () => {
     if (!prenom || !nom) return 'Indique ton prénom et ton nom'
     if (!username) return "Choisis un nom d'utilisateur"
-    if (username.length < 3) return "Le nom d'utilisateur doit faire au moins 3 caractères"
+    if (!usernameValide(username)) return MESSAGE_USERNAME
     return null
   }
 
@@ -138,7 +139,7 @@ export default function Register() {
                 value={nom} onChange={(e) => setNom(e.target.value)} />
             </Champ>
 
-            <Champ id="username" label="Nom d'utilisateur" aide="C'est ce nom qui te servira à te connecter.">
+            <Champ id="username" label="Nom d'utilisateur" aide="C'est ce nom qui te servira à te connecter. 3 à 20 caractères, il commence par une lettre (lettres, chiffres, _ ou . ensuite).">
               <input id="username" className="ui-input" aria-describedby="username-aide" autoCapitalize="none" autoComplete="username"
                 value={username} onChange={(e) => setUsername(e.target.value)} />
             </Champ>

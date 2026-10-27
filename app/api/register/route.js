@@ -16,8 +16,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { ipClient, limiter, MESSAGE_LIMITE_HEURE } from '@/lib/limiteur'
 import { schemaRegister, validerCorps, REQUETE_INVALIDE } from '@/lib/schemas'
+import { USERNAME_REGEX, MESSAGE_USERNAME } from '@/lib/username'
 
-const USERNAME_VALIDE = /^[a-z0-9_.]{3,20}$/
 const EMAIL_VALIDE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
 const service = () =>
@@ -66,9 +66,7 @@ export async function POST(request) {
     }
 
     if (prenom.length < 2) return erreur('Indique ton prénom (2 caractères minimum).')
-    if (!USERNAME_VALIDE.test(username)) {
-      return erreur('Nom d’utilisateur invalide : 3 à 20 caractères (lettres, chiffres, _ ou .)')
-    }
+    if (!USERNAME_REGEX.test(username)) return erreur(MESSAGE_USERNAME)
 
     // 5. Unicité du username (chez quelqu'un d'autre)
     const { data: pris, error: erreurPris } = await supabase

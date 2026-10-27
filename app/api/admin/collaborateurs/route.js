@@ -19,6 +19,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { limiter, MESSAGE_LIMITE_ADMIN } from '@/lib/limiteur'
+import { normaliserUsername as nettoyerUsername, USERNAME_REGEX, MESSAGE_USERNAME } from '@/lib/username'
 import {
   schemaCollaborateurCreation, schemaCollaborateurModification, validerCorps, REQUETE_INVALIDE,
 } from '@/lib/schemas'
@@ -40,10 +41,10 @@ function normaliserTelephone(brut) {
   return /^\+\d{8,15}$/.test(tel) ? tel : null
 }
 
-/* "@Said_M" → "said_m" ; renvoie null si le format est mauvais */
+/* "@Said_M" → "said_m" ; renvoie null si le format est mauvais (règle : lib/username.js) */
 function normaliserUsername(brut) {
-  const u = String(brut || '').trim().toLowerCase().replace(/^@/, '')
-  return /^[a-z0-9_.]{3,20}$/.test(u) ? u : null
+  const u = nettoyerUsername(brut)
+  return USERNAME_REGEX.test(u) ? u : null
 }
 
 /* ── Vérifie que l'appel vient d'un admin connecté ──
@@ -123,7 +124,7 @@ export async function POST(request) {
   const motDePasse = String(corps.motDePasse || '')
 
   if (!prenom) return erreur('Le prénom est obligatoire.')
-  if (!username) return erreur('Nom d\u2019utilisateur invalide : 3 à 20 caractères (lettres, chiffres, _ ou .).')
+  if (!username) return erreur(MESSAGE_USERNAME)
   if (!telephone) return erreur('Téléphone invalide : format international, ex. +2693334455 ou +8613800138000.')
   if (motDePasse.length < MDP_MIN) return erreur(`Le mot de passe doit faire au moins ${MDP_MIN} caractères.`)
 
