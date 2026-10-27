@@ -79,3 +79,40 @@ describe('Schémas de gestion des collaborateurs', () => {
     expect(validerCorps(schemaCollaborateurModification, { id: 12 }).ok).toBe(false)
   })
 })
+
+describe('Nom d\u2019utilisateur : commence obligatoirement par une lettre', () => {
+  const MESSAGE =
+    "Nom d'utilisateur invalide : 3 à 20 caractères, commence par une lettre (lettres, chiffres, _ ou . ensuite)."
+  const inscription = (username) => validerCorps(schemaRegister, { prenom: 'Said', username })
+
+  it.each(['2pac', '2693200001', '+33', 'ab', '_ali', '.ali', 'ali!', 'ali bou'])('refuse « %s »', (username) => {
+    const r = inscription(username)
+    expect(r.ok, username).toBe(false)
+    expect(r.message).toBe(MESSAGE)
+  })
+
+  it.each(['ali_97', 'a.b', 'abc', 'Said_M', '@said_m', ' ali_97 ', 'a' + '1'.repeat(19)])('accepte « %s »', (username) => {
+    expect(inscription(username).ok, username).toBe(true)
+  })
+
+  it('refuse plus de 20 caractères', () => {
+    expect(inscription('a' + '1'.repeat(20)).ok).toBe(false)
+  })
+
+  it('s\u2019applique aussi à la création d\u2019un collaborateur', () => {
+    const corps = { mode: 'nouveau', role: 'collab_comores', prenom: 'Said' }
+    expect(validerCorps(schemaCollaborateurCreation, { ...corps, username: '2pac' }).message).toBe(MESSAGE)
+    expect(validerCorps(schemaCollaborateurCreation, { ...corps, username: 'ali_97' }).ok).toBe(true)
+  })
+
+  it('laisse passer un username vide (donner l\u2019accès à un compte existant n\u2019en demande pas)', () => {
+    expect(validerCorps(schemaCollaborateurCreation, { mode: 'existant', role: 'collab_comores', username: '', identifiant: 'said_m' }).ok).toBe(true)
+  })
+
+  it('la règle commune (lib/username.js) donne les mêmes réponses', async () => {
+    const { usernameValide, normaliserUsername } = await import('@/lib/username')
+    expect(usernameValide('2pac')).toBe(false)
+    expect(usernameValide('ali_97')).toBe(true)
+    expect(normaliserUsername(' @Ali_97 ')).toBe('ali_97')
+  })
+})

@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react'
 import { Globe, MapPin, Plus, Copy, Check, ArrowLeftRight, KeyRound, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
+import { usernameValide, MESSAGE_USERNAME } from '@/lib/username'
 import Icone from '@/components/ui/Icone'
 import Badge from '@/components/ui/Badge'
 import EtatVide from '@/components/ui/EtatVide'
@@ -28,7 +29,6 @@ const MDP_MIN = 8
 
 /* Mêmes règles que le serveur, pour répondre tout de suite à l'écran */
 const telephoneValide = (t) => /^\+\d{8,15}$/.test(String(t).replace(/[\s.\-()]/g, ''))
-const usernameValide = (u) => /^[a-z0-9_.]{3,20}$/.test(String(u).trim().toLowerCase().replace(/^@/, ''))
 
 /* Mot de passe lisible : sans 0/O, 1/l/I (trop faciles à confondre en le dictant) */
 function genererMotDePasse(longueur = 10) {
@@ -106,7 +106,7 @@ export default function Collaborateurs() {
       return form.identifiant.trim() ? '' : 'Indique le nom d\u2019utilisateur ou le téléphone du compte.'
     }
     if (!form.prenom.trim()) return 'Le prénom est obligatoire.'
-    if (!usernameValide(form.username)) return 'Nom d\u2019utilisateur : 3 à 20 caractères (lettres, chiffres, _ ou .).'
+    if (!usernameValide(form.username)) return MESSAGE_USERNAME
     if (!telephoneValide(form.telephone)) return 'Téléphone au format international, avec l\u2019indicatif : +269…, +86…'
     if (form.motDePasse.length < MDP_MIN) return `Mot de passe : au moins ${MDP_MIN} caractères (bouton « Générer » si besoin).`
     return ''
