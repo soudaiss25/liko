@@ -17,6 +17,7 @@ import BarreNavMobile from '@/components/BarreNavMobile'
 import { Package } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
 import Badge from '@/components/ui/Badge'
+import { avanceEnAttente } from '@/lib/avance'
 import Bouton from '@/components/ui/Bouton'
 import EtatVide from '@/components/ui/EtatVide'
 import { ChargementListe } from '@/components/ui/Squelette'
@@ -55,6 +56,8 @@ export default function PageMesCommandes() {
       .map((r, i) => (r.data ? {
         numero: r.data.numero, statut: r.data.statut, created_at: r.data.created_at,
         montant_total: r.data.montant_total, code_suivi: codes[i],
+        montant_avance_requis: r.data.montant_avance_requis, montant_avance_recu: r.data.montant_avance_recu,
+        montant_a_rembourser: r.data.montant_a_rembourser,
         rattachee: r.data.rattachee, a_moi: r.data.a_moi,
         apercu: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').slice(0, 3),
         nb_articles: (r.data.lignes || []).filter((l) => l.etat !== 'retiree').reduce((s, l) => s + l.quantite, 0),
@@ -153,7 +156,10 @@ function Section({ titre, liste }) {
               <a href={`/suivi/${c.code_suivi}`} className="mc-carte">
                 <span className="mc-carte-haut">
                   <b>{referenceCommande(c.numero)}</b>
-                  <Badge ton={s.ton}>{s.label}</Badge>
+                  <span className="mc-badges">
+                    <Badge ton={s.ton}>{s.label}</Badge>
+                    {avanceEnAttente(c) && <Badge ton="or">Avance à payer</Badge>}
+                  </span>
                 </span>
                 <span className="mc-apercu">
                   {(c.apercu || []).map((p, i) => (
@@ -205,6 +211,7 @@ const css = `
   .mc-carte:hover { border-color: ${C.inkSoft}; }
   .mc-carte-haut { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .mc-carte-haut b { font-size: 16px; }
+  .mc-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; }
 
   .mc-apercu { display: flex; align-items: center; gap: 8px; }
   .mc-thumb { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: ${C.sand}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
