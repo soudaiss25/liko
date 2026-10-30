@@ -5,7 +5,7 @@
 import { MessageCircle } from 'lucide-react'
 import Icone from '@/components/ui/Icone'
 import { C } from '@/lib/theme'
-import { NOM_BOUTIQUE, WHATSAPP_SERVICE } from '@/lib/config'
+import { NOM_BOUTIQUE, WHATSAPP_SERVICE, WHATSAPP_CHIFFRES } from '@/lib/config'
 
 export default function Footer() {
   return (
@@ -19,7 +19,7 @@ export default function Footer() {
             Des produits venus de Chine, livrés sur les 3 îles et payés à la réception.
           </p>
           {WHATSAPP_SERVICE && (
-            <a href={`https://wa.me/${WHATSAPP_SERVICE}`} className="footer-wa">
+            <a href={`https://wa.me/${WHATSAPP_CHIFFRES}`} className="footer-wa">
               <Icone icone={MessageCircle} taille={18} /> Écrire sur WhatsApp
             </a>
           )}

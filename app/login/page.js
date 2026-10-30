@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase-browser'
 import CadreAuth from '@/components/ui/CadreAuth'
 import Champ, { Message } from '@/components/ui/Champ'
 import Bouton from '@/components/ui/Bouton'
-import { WHATSAPP_SERVICE } from '@/lib/config'
+import { WHATSAPP_SERVICE, WHATSAPP_CHIFFRES } from '@/lib/config'
 
 /* Page à rouvrir après la connexion (?suite=/admin).
    Sécurité : on n'accepte qu'un chemin INTERNE ("/admin"), jamais une adresse
@@ -100,7 +100,7 @@ export default function Login() {
         <>
           <span>Pas encore de compte ? <a href="/register">Créer un compte</a></span>
           {WHATSAPP_SERVICE && (
-            <span>Mot de passe perdu ? <a href={`https://wa.me/${WHATSAPP_SERVICE}`}>Écris-nous sur WhatsApp</a></span>
+            <span>Mot de passe perdu ? <a href={`https://wa.me/${WHATSAPP_CHIFFRES}`}>Écris-nous sur WhatsApp</a></span>
           )}
         </>
       }
