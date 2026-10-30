@@ -19,7 +19,7 @@ import { createClient } from '@/lib/supabase-browser'
 import { Search, User, ShoppingCart } from 'lucide-react'
 import Icone from '@/components/ui/Icone'
 import { getPanierCount } from '@/lib/cart'
-import { WHATSAPP_SERVICE } from '@/lib/config'
+import { WHATSAPP_SERVICE, WHATSAPP_CHIFFRES } from '@/lib/config'
 import { C } from '@/lib/theme'
 
 export default function Header({ search, onSearchChange }) {
@@ -74,7 +74,7 @@ export default function Header({ search, onSearchChange }) {
           {WHATSAPP_SERVICE && (
             <>
               <span className="hd-dot">·</span>
-              <a href={`https://wa.me/${WHATSAPP_SERVICE}`} className="hd-topbar-wa">Aide sur WhatsApp</a>
+              <a href={`https://wa.me/${WHATSAPP_CHIFFRES}`} className="hd-topbar-wa">Aide sur WhatsApp</a>
             </>
           )}
         </div>

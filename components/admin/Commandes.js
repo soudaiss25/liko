@@ -15,6 +15,8 @@ import { RefreshCw, ArrowLeft, Check, Phone, MessageCircle, TriangleAlert } from
 import ProduitImage from '@/components/ProduitImage'
 import Icone from '@/components/ui/Icone'
 import Badge from '@/components/ui/Badge'
+import BlocPaiements from '@/components/commande/BlocPaiements'
+import { avanceReste, avanceEnAttente, remboursementReste } from '@/lib/avance'
 import { ChargementListe } from '@/components/ui/Squelette'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 import {
@@ -33,6 +35,7 @@ const FILTRES = [
 /* Une commande "à surveiller" = quelque chose bloque et demande une décision */
 function aSurveiller(c) {
   if (c.statut === 'echec_livraison') return true
+  if (c.statut === 'annulee' && remboursementReste(c) > 0) return true // un remboursement est à faire
   if (['livree', 'annulee'].includes(c.statut)) return false
   return (c.lignes || []).some((l) => l.etat === 'indisponible' ||
     (l.quantite_recue != null && l.etat !== 'retiree' && l.quantite_recue < l.quantite))
@@ -140,6 +143,8 @@ export default function Commandes({ onChange }) {
                   <span className="ac-ligne-haut">
                     <b>{referenceCommande(c.numero)}</b>
                     <Badge ton={s.ton}>{s.label}</Badge>
+                    {avanceEnAttente(c) && <Badge ton="or">Avance en attente</Badge>}
+                    {c.statut === 'annulee' && remboursementReste(c) > 0 && <Badge ton="rouge">À rembourser</Badge>}
                     {aSurveiller(c) && <Badge ton="rouge">À surveiller</Badge>}
                   </span>
                   <span className="ac-ligne-client">
@@ -174,6 +179,7 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
   const s = STATUTS_COMMANDE[c.statut] || { label: c.statut, ton: 'gris' }
   const terminee = ['livree', 'annulee'].includes(c.statut)
   const lignesActives = (c.lignes || []).filter((l) => l.etat !== 'retiree')
+  const avanceManquante = c.statut === 'recue' && avanceReste(c) > 0 // pas de confirmation sans l'avance complète
 
   const lancer = async (fonction, params, succes) => {
     setOccupe(true)
@@ -242,11 +248,19 @@ function DetailCommande({ commande: c, message, onRetour, agir }) {
               </label>
               <input className="input" placeholder="Note (facultatif) : ex. livrer après 17 h" value={noteConfirmation}
                 onChange={(e) => setNoteConfirmation(e.target.value)} aria-label="Note de confirmation" />
-              <button onClick={confirmer} disabled={!clientJoint || occupe} className="btn-primary ac-btn-large">
+              {avanceManquante && (
+                <p className="err" role="status">
+                  Confirmation impossible : l&apos;avance n&apos;est pas complète (reste {formatKMF(avanceReste(c))} KMF).
+                  Enregistre-la dans le bloc « Avance » ci-dessous.
+                </p>
+              )}
+              <button onClick={confirmer} disabled={!clientJoint || occupe || avanceManquante} className="btn-primary ac-btn-large">
                 {occupe ? 'Patiente…' : 'Confirmer la commande'}
               </button>
             </div>
           )}
+
+          <BlocPaiements commande={c} executer={lancer} occupe={occupe} />
 
           {/* ── Client ── */}
           <div className="ac-carte">

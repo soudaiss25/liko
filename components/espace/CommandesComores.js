@@ -17,6 +17,8 @@ import { Check, ClipboardList, Bell, Phone, MessageCircle, Bike, TriangleAlert, 
 import ProduitImage from '@/components/ProduitImage'
 import Icone from '@/components/ui/Icone'
 import EtatVide from '@/components/ui/EtatVide'
+import BlocPaiements from '@/components/commande/BlocPaiements'
+import { avanceEnAttente, avanceNette, remboursementReste } from '@/lib/avance'
 import { formatKMF, normaliserTexte } from '@/lib/produit'
 import { dateLocale, formatDateCourte, referenceEnvoi } from '@/lib/envois'
 import {
@@ -170,6 +172,8 @@ function CarteCommande({ commande: c, onOuvrir }) {
         <b className="cc-ref">{referenceCommande(c.numero)}</b>
         <span className={`badge badge-${statut.ton}`}>{statut.label}</span>
         {relancee && <span className="badge badge-or"><Icone icone={Bell} taille={16} /> Relancée</span>}
+        {avanceEnAttente(c) && <span className="badge badge-or">Avance en attente</span>}
+        {c.statut === 'annulee' && remboursementReste(c) > 0 && <span className="badge badge-rouge">À rembourser</span>}
       </span>
       <span className="cc-ligne cc-fort">
         {c.client?.nom} · {c.client?.telephone} · {labelIle(c.ile)}
@@ -194,7 +198,10 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
   const [erreur, setErreur] = useState('')
 
   const [messageRelance, setMessageRelance] = useState('')
-  const [montant, setMontant] = useState(String(c.montant_total ?? 0))
+  // Ce qu'on encaisse à la livraison = le RESTE (le total moins l'avance déjà payée)
+  const resteAEncaisser = Number(c.reste_a_encaisser ?? c.montant_total ?? 0)
+  const avancePayee = Math.max(avanceNette(c), 0)
+  const [montant, setMontant] = useState(String(resteAEncaisser))
   const [noteMontant, setNoteMontant] = useState('')
   const [ouvertEchec, setOuvertEchec] = useState(false)
   const [motifEchec, setMotifEchec] = useState('')
@@ -234,7 +241,7 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
   /* ── Livrée et encaissée ── */
   const montantNombre = montant.trim() === '' ? null : Number(montant)
   const montantValide = montantNombre !== null && Number.isInteger(montantNombre) && montantNombre >= 0
-  const montantDiffere = montantValide && montantNombre !== Number(c.montant_total)
+  const montantDiffere = montantValide && montantNombre !== resteAEncaisser
   const noteManquante = montantDiffere && !noteMontant.trim()
 
   const livrer = () => {
@@ -296,6 +303,8 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
         </div>
       </div>
 
+      <BlocPaiements commande={c} executer={agir} occupe={occupe} />
+
       {/* ── Relancer l'achat ── */}
       {peutRelancer && (
         <div className="carte">
@@ -331,7 +340,8 @@ export function DetailCommande({ commande: c, onRetour, onTermine, onErreurRecha
             <label className="label" htmlFor="montant">Montant encaissé (KMF)</label>
             <input id="montant" className="input" inputMode="numeric" value={montant}
               onChange={(e) => setMontant(e.target.value.replace(/\D/g, ''))} />
-            <p className="hint">Total de la commande : {formatKMF(c.montant_total)} KMF</p>
+            {avancePayee > 0 && <p className="hint">Avance déjà payée : {formatKMF(avancePayee)} KMF</p>}
+            <p className="hint">{avancePayee > 0 ? 'Reste à encaisser' : 'Total de la commande'} : {formatKMF(resteAEncaisser)} KMF</p>
           </div>
           {montantDiffere && (
             <div className="field">

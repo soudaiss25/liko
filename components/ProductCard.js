@@ -67,6 +67,10 @@ export default function ProductCard({ produit: p, estFavori = false, onToggleFav
           <span className="pc-currency">KMF</span>
         </div>
 
+        {p.mode_paiement === 'avance' && Number(p.avance_unitaire) > 0 && (
+          <p className="pc-avance">Avance de {formatKMF(p.avance_unitaire)} KMF par pièce à la commande</p>
+        )}
+
         {/* Prix de gros : juste un lien discret vers la fiche (décision du projet) */}
         {pieceLot && (
           <a href={`/produits/${p.id}`} className="pc-gros">
@@ -118,6 +122,7 @@ const css = `
   .pc-price-row { display: flex; align-items: baseline; gap: 4px; }
   .pc-price { font-size: 20px; font-weight: 800; color: ${C.clay}; }
   .pc-currency { font-size: 13px; font-weight: 600; color: ${C.inkSoft}; }
+  .pc-avance { font-size: 13px; color: ${C.inkSoft}; margin: 4px 0 0; line-height: 1.4; }
 
   .pc-gros {
     display: inline-flex; align-items: center; min-height: 44px; margin-top: 4px; font-size: 14px; font-weight: 600;

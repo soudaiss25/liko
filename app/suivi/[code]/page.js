@@ -18,6 +18,8 @@ import EtatVide from '@/components/ui/EtatVide'
 import { Squelette } from '@/components/ui/Squelette'
 import ProduitImage from '@/components/ProduitImage'
 import FriseCommande from '@/components/commande/FriseCommande'
+import InstructionsAvance from '@/components/commande/InstructionsAvance'
+import { avanceEnAttente, avanceReste, resteALaLivraison, remboursementReste } from '@/lib/avance'
 import { formatKMF } from '@/lib/produit'
 import {
   ETAPES, STATUTS_COMMANDE, referenceCommande, formatDate, labelIle,
@@ -126,6 +128,8 @@ export default function PageSuivi() {
   const statut = STATUTS_COMMANDE[commande.statut] || { label: commande.statut, ton: 'gris' }
   const etapeActuelle = ETAPES.find((e) => e.id === commande.statut)
   const aPayer = commande.statut !== 'annulee' && commande.statut !== 'livree'
+  const avecAvance = Number(commande.montant_avance_requis) > 0
+  const aRembourser = remboursementReste(commande)
   const lignesVisibles = commande.lignes || []
   const lignesIndispo = lignesVisibles.filter((l) => l.etat === 'indisponible')
 
@@ -155,8 +159,8 @@ export default function PageSuivi() {
           </p>
           {aPayer && (
             <div className="sv-montant">
-              <span>À payer à la livraison</span>
-              <b>{formatKMF(commande.montant_total)} KMF</b>
+              <span>{avecAvance ? 'Reste à payer à la livraison' : 'À payer à la livraison'}</span>
+              <b>{formatKMF(resteALaLivraison(commande))} KMF</b>
             </div>
           )}
         </section>
@@ -181,6 +185,24 @@ export default function PageSuivi() {
               </p>
             )}
           </div>
+        )}
+
+        {avanceEnAttente(commande) && (
+          <section className="sv-doree" aria-labelledby="t-avance">
+            <h2 id="t-avance">Avance en attente : reste {formatKMF(avanceReste(commande))} KMF</h2>
+            <p>
+              Ta commande sera confirmée dès que l&apos;avance est reçue en entier. Rien n&apos;est acheté avant.
+            </p>
+            <InstructionsAvance montant={avanceReste(commande)} reference={referenceCommande(commande.numero)} />
+          </section>
+        )}
+
+        {commande.statut === 'annulee' && (aRembourser > 0 || Number(commande.montant_rembourse) > 0) && (
+          <section className="sv-doree" aria-labelledby="t-remb">
+            <h2 id="t-remb">Remboursement</h2>
+            {aRembourser > 0 && <p><b>{formatKMF(aRembourser)} KMF à vous rembourser.</b> Notre équipe te contacte pour te les remettre.</p>}
+            {Number(commande.montant_rembourse) > 0 && <p>Remboursé : {formatKMF(commande.montant_rembourse)} KMF</p>}
+          </section>
         )}
 
         {lignesIndispo.length > 0 && commande.statut !== 'annulee' && (
@@ -221,6 +243,9 @@ export default function PageSuivi() {
                   <div><dt>Livraison</dt><dd>{formatKMF(commande.montant_livraison)} KMF</dd></div>
                 )}
                 <div className="sv-total"><dt>Total</dt><dd>{formatKMF(commande.montant_total)} KMF</dd></div>
+                {Number(commande.montant_avance_recu) > 0 && (
+                  <div><dt>Avance reçue</dt><dd>{formatKMF(commande.montant_avance_recu)} KMF</dd></div>
+                )}
               </dl>
             </section>
 
@@ -292,6 +317,14 @@ const css = `
   .sv-message-err { background: #FBF0EE; color: #a8453a; }
   .sv-alerte { font-size: 15px; background: ${C.white}; border: 1px solid ${C.line}; color: ${C.inkDeep}; border-radius: 8px; padding: 12px 16px; margin: 0 0 16px; line-height: 1.5; }
 
+  .sv-doree {
+    background: #fbf0d9; border: 1px solid #e6c987; color: #4d3305; border-radius: 12px;
+    padding: 16px; margin: 0 0 16px;
+  }
+  .sv-doree h2 { font-size: 18px; font-weight: 800; margin: 0 0 8px; }
+  .sv-doree p { font-size: 15px; line-height: 1.5; margin: 0 0 12px; }
+  .sv-doree p:last-child { margin-bottom: 0; }
+  .sv-doree .ia-titre, .sv-doree .ia-liste { color: #4d3305; }
   .sv-grille { display: grid; grid-template-columns: 1fr; gap: 16px; }
   .sv-carte { background: ${C.white}; border: 1px solid ${C.line}; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .sv-carte h2 { font-size: 18px; font-weight: 800; margin: 0 0 16px; }

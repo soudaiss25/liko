@@ -31,6 +31,7 @@ function versFormulaire(p) {
       nom: '', description: '', categorie: CATEGORIES[0], origine: ORIGINES[0],
       prix_detail: '', avecGros: false, prix_piece_lot: '', qte_min_gros: '',
       prix_achat: '', actif: true, images: [],
+      mode_paiement: 'livraison', avance_unitaire: '',
     }
   }
   return {
@@ -46,6 +47,8 @@ function versFormulaire(p) {
     prix_achat: p.prix_achat ?? '',
     actif: p.actif,
     images: p.images || [],
+    mode_paiement: p.mode_paiement === 'avance' ? 'avance' : 'livraison',
+    avance_unitaire: p.avance_unitaire ?? '',
   }
 }
 
@@ -64,6 +67,8 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
   const totalLot = nbLot * pieceLot
   const economieLot = nbLot * prixUnite - totalLot
   const lotIncoherent = pieceLot > 0 && prixUnite > 0 && pieceLot >= prixUnite
+  const avecAvance = form.mode_paiement === 'avance'
+  const avance = Number(form.avance_unitaire) || 0
 
   /* ── Photos : ajout (compressée puis envoyée tout de suite) ── */
   const ajouterPhotos = async (e) => {
@@ -115,6 +120,13 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
         return
       }
     }
+    if (avecAvance) {
+      if (!(avance > 0)) { setErreur('Indique l\u2019avance demandée par pièce (plus de 0 KMF).'); return }
+      if (avance > prixUnite) {
+        setErreur(`L'avance par pièce (${formatKMF(avance)} KMF) ne peut pas dépasser le prix à l'unité (${formatKMF(prixUnite)} KMF).`)
+        return
+      }
+    }
     if (uploadEnCours > 0) { setErreur('Attends la fin de l\u2019envoi des photos.'); return }
 
     setEnvoi(true)
@@ -131,6 +143,8 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
       prix_achat: form.prix_achat ? Number(form.prix_achat) : null,
       actif: form.actif,
       images: form.images,
+      mode_paiement: avecAvance ? 'avance' : 'livraison',
+      avance_unitaire: avecAvance ? avance : null,   // null en paiement à la livraison
     }
 
     const { error } = produit
@@ -235,6 +249,33 @@ export default function FormulaireProduit({ produit, onAnnuler, onEnregistre }) 
             onChange={(e) => setForm({ ...form, prix_detail: e.target.value })}
             placeholder="2500" />
         </div>
+
+        <fieldset className="field fp-paiement">
+          <legend className="label">Paiement</legend>
+          <label className="checkbox-row">
+            <input type="radio" name="mode_paiement" checked={!avecAvance}
+              onChange={() => setForm({ ...form, mode_paiement: 'livraison' })} />
+            <span>Paiement à la livraison</span>
+          </label>
+          <label className="checkbox-row">
+            <input type="radio" name="mode_paiement" checked={avecAvance}
+              onChange={() => setForm({ ...form, mode_paiement: 'avance' })} />
+            <span>Avance demandée</span>
+          </label>
+        </fieldset>
+
+        {avecAvance && (
+          <div className="field">
+            <label className="label" htmlFor="avance_unitaire">Avance par pièce (KMF)</label>
+            <input id="avance_unitaire" className="input" type="number" min="1" value={form.avance_unitaire}
+              onChange={(e) => setForm({ ...form, avance_unitaire: e.target.value })}
+              placeholder="500" />
+            <p className="fp-aide">
+              Le client paie cette somme par pièce à la commande, le reste à la livraison. Elle ne peut pas dépasser le prix à l&apos;unité
+              {prixUnite > 0 && <> ({formatKMF(prixUnite)} KMF)</>}. En lot, elle est plafonnée au prix de la pièce en lot.
+            </p>
+          </div>
+        )}
 
         <div className="field">
           <label className="checkbox-row">
@@ -358,6 +399,9 @@ const css = `
   .fp-gros-resume b { font-weight: 800; }
   .fp-gros-err { color: ${C.clay}; }
 
+  .fp-paiement { border: none; padding: 0; margin: 0 0 16px; min-width: 0; }
+  .fp-paiement legend { padding: 0; }
+  .fp-aide { font-size: 14px; color: ${C.inkSoft}; margin: 8px 0 0; line-height: 1.45; }
   .fp-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
 
   @media (max-width: 700px) {

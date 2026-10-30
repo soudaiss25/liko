@@ -45,7 +45,7 @@ export default function FicheProduit() {
       setChargement(true)
       const { data: p } = await supabase.from('produits')
         // Colonnes listées une à une : jamais de prix d'achat côté visiteur
-        .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, images')
+        .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire, images')
         .eq('id', id)
         .single()
       setProduit(p)
@@ -76,6 +76,11 @@ export default function FicheProduit() {
     : (produit?.prix_detail || 0) * quantite
 
   const nbPiecesTotal = enGros ? quantite * tailleLot : quantite
+
+  // Avance par pièce, pour l'affichage (la base recalcule) : jamais plus que le prix de la pièce
+  const avancePiece = produit?.mode_paiement === 'avance' && Number(produit?.avance_unitaire) > 0
+    ? Math.round(Math.min(Number(produit.avance_unitaire), enGros ? prixParPieceEnLot : produit.prix_detail))
+    : 0
 
   const changerMode = (nouveauMode) => {
     setMode(nouveauMode)
@@ -193,6 +198,11 @@ export default function FicheProduit() {
                 </span>
               )}
             </div>
+            {avancePiece > 0 && (
+              <p className="price-note">
+                Avance de {formatKMF(avancePiece)} KMF par pièce à la commande, le reste à la livraison.
+              </p>
+            )}
             {produit.prix_gros && (
               <p className="price-note">
                 Aussi disponible en lot de {tailleLot} pièces, soit {formatKMF(prixParPieceEnLot)} KMF la pièce.

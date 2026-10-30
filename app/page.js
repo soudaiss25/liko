@@ -41,7 +41,7 @@ export default function Catalogue() {
     const { data, error } = await supabase
       .from('produits')
       // Colonnes listées une à une : le prix d'achat ne doit JAMAIS arriver chez le visiteur
-      .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, images, created_at')
+      .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire, images, created_at')
       .eq('actif', true)
       .order('created_at', { ascending: false })
     if (!error && data) setProduits(data)

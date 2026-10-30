@@ -11,6 +11,7 @@ import Icone from '@/components/ui/Icone'
 import EtatVide, { EtatErreur } from '@/components/ui/EtatVide'
 import { ChargementListe } from '@/components/ui/Squelette'
 import { getPanier, modifierQuantite, retirerDuPanier } from '@/lib/cart'
+import { avanceEstimee } from '@/lib/avance'
 import { C } from '@/lib/theme'
 
 export default function Panier() {
@@ -45,7 +46,7 @@ export default function Panier() {
     const ids = [...new Set(panierBrut.map((l) => l.id))]
     const { data, error } = await supabase.from('produits')
       // Colonnes listées une à une : jamais de prix d'achat côté visiteur
-      .select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros')
+      .select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire')
       .in('id', ids)
     if (error) setErreur(true)
 
@@ -90,6 +91,7 @@ export default function Panier() {
   const lignesValides = lignes.filter((l) => produits[l.id])
   const total = lignesValides.reduce((sum, l) => sum + prixLigne(l), 0)
   const nbArticles = lignesValides.reduce((sum, l) => sum + nbPiecesLigne(l), 0)
+  const avance = avanceEstimee(lignesValides, produits) // affichage seulement : la base recalcule
 
   return (
     <div className="app">
@@ -197,13 +199,27 @@ export default function Panier() {
                   <b>{total.toLocaleString('fr-FR')} KMF</b>
                 </div>
 
+                {avance > 0 && (
+                  <div className="summary-avance">
+                    <div className="summary-row">
+                      <span>À payer maintenant (avance)</span>
+                      <b>{avance.toLocaleString('fr-FR')} KMF</b>
+                    </div>
+                    <div className="summary-row">
+                      <span>À payer à la livraison</span>
+                      <b>{Math.max(total - avance, 0).toLocaleString('fr-FR')} KMF</b>
+                    </div>
+                    <p className="checkout-note">L&apos;avance est expliquée avant de valider ta commande.</p>
+                  </div>
+                )}
+
                 <a href="/commande" className="checkout-btn">
                   Passer la commande
                 </a>
 
                 {!user && (
                   <p className="checkout-note">
-                    Tu peux commander sans compte : tu paies à la livraison.
+                    {avance > 0 ? 'Tu peux commander sans compte.' : 'Tu peux commander sans compte : tu paies à la livraison.'}
                   </p>
                 )}
 
@@ -308,6 +324,11 @@ const css = `
   }
   .summary-total span { font-size: 16px; font-weight: 700; color: ${C.inkDeep}; }
   .summary-total b { font-size: 22px; font-weight: 800; color: ${C.inkDeep}; }
+
+  .summary-avance { border-top: 1px solid ${C.line}; padding-top: 12px; margin-bottom: 16px; }
+  .summary-avance .summary-row { color: ${C.inkDeep}; }
+  .summary-avance .summary-row b { color: ${C.inkDeep}; font-weight: 800; }
+  .summary-avance .checkout-note { margin: 4px 0 0; }
 
   .checkout-btn {
     display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px;
