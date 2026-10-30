@@ -12,6 +12,7 @@ import { Search, Pencil, Trash2, Plus, Package } from 'lucide-react'
 import ProduitImage from '@/components/ProduitImage'
 import Icone from '@/components/ui/Icone'
 import EtatVide from '@/components/ui/EtatVide'
+import Badge from '@/components/ui/Badge'
 import { CATEGORIES, formatKMF, prixPieceEnLot, normaliserTexte } from '@/lib/produit'
 
 import { C } from '@/lib/theme'
@@ -204,6 +205,7 @@ export default function ListeProduits({
                       {vendus > 0 ? `${vendus} vendu${vendus > 1 ? 's' : ''}` : 'Jamais vendu'}
                     </span>
                     {(!p.images || p.images.length === 0) && <span className="lp-sans-photo">Sans photo</span>}
+                    {p.mode_paiement === 'avance' && <Badge ton="or">Avance {formatKMF(p.avance_unitaire)} KMF</Badge>}
                   </div>
                 </div>
 
