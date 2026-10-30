@@ -45,7 +45,7 @@ export default function FicheProduit() {
       setChargement(true)
       const { data: p } = await supabase.from('produits')
         // Colonnes listées une à une : jamais de prix d'achat côté visiteur
-        .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, images')
+        .select('id, nom, description, categorie, origine, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire, images')
         .eq('id', id)
         .single()
       setProduit(p)

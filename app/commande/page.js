@@ -73,7 +73,7 @@ export default function PageCommande() {
       const ids = [...new Set(lignes.map((l) => l.id))]
       const [resProduits, resFrais, resUser] = await Promise.all([
         ids.length
-          ? supabase.from('produits').select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros, actif').in('id', ids)
+          ? supabase.from('produits').select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire, actif').in('id', ids)
           : Promise.resolve({ data: [] }),
         supabase.rpc('frais_livraison_iles'),
         supabase.auth.getUser(),

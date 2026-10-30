@@ -45,7 +45,7 @@ export default function Panier() {
     const ids = [...new Set(panierBrut.map((l) => l.id))]
     const { data, error } = await supabase.from('produits')
       // Colonnes listées une à une : jamais de prix d'achat côté visiteur
-      .select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros')
+      .select('id, nom, categorie, images, prix_detail, prix_gros, qte_min_gros, mode_paiement, avance_unitaire')
       .in('id', ids)
     if (error) setErreur(true)
 
