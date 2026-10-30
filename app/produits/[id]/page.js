@@ -77,6 +77,11 @@ export default function FicheProduit() {
 
   const nbPiecesTotal = enGros ? quantite * tailleLot : quantite
 
+  // Avance par pièce, pour l'affichage (la base recalcule) : jamais plus que le prix de la pièce
+  const avancePiece = produit?.mode_paiement === 'avance' && Number(produit?.avance_unitaire) > 0
+    ? Math.round(Math.min(Number(produit.avance_unitaire), enGros ? prixParPieceEnLot : produit.prix_detail))
+    : 0
+
   const changerMode = (nouveauMode) => {
     setMode(nouveauMode)
     setQuantite(1)
@@ -193,6 +198,11 @@ export default function FicheProduit() {
                 </span>
               )}
             </div>
+            {avancePiece > 0 && (
+              <p className="price-note">
+                Avance de {formatKMF(avancePiece)} KMF par pièce à la commande, le reste à la livraison.
+              </p>
+            )}
             {produit.prix_gros && (
               <p className="price-note">
                 Aussi disponible en lot de {tailleLot} pièces, soit {formatKMF(prixParPieceEnLot)} KMF la pièce.

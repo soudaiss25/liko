@@ -26,6 +26,8 @@ import {
   memoriserSuivi, messageErreurCommande,
 } from '@/lib/commandes'
 import { DELAI_LIVRAISON } from '@/lib/config'
+import { avanceEstimee } from '@/lib/avance'
+import InstructionsAvance from '@/components/commande/InstructionsAvance'
 
 import { C } from '@/lib/theme'
 /* "+269 333 44 55" → { indicatif: '+269', numero: '333 44 55' } */
@@ -63,6 +65,7 @@ export default function PageCommande() {
   const [resumeOuvert, setResumeOuvert] = useState(false)
   const [confirmation, setConfirmation] = useState(null) // réponse du guichet
   const [copie, setCopie] = useState(false)
+  const [compris, setCompris] = useState(false) // case "J'ai compris" (obligatoire quand il y a une avance)
 
   /* ── Chargement : panier, produits à jour, frais, compte ── */
   useEffect(() => {
@@ -112,6 +115,7 @@ export default function PageCommande() {
   const sousTotal = lignes.filter((l) => !l.indispo).reduce((s, l) => s + l.total, 0)
   const fraisIle = form.ile ? frais[form.ile] : undefined
   const total = sousTotal + (fraisIle || 0)
+  const avance = avanceEstimee(lignes.filter((l) => !l.indispo), produits) // affichage seulement : la base recalcule
   const nbArticles = lignes.filter((l) => !l.indispo).reduce((s, l) => s + (l.mode === 'lot' ? l.quantite * (l.produit?.qte_min_gros || 1) : l.quantite), 0)
 
   const retirer = (l) => {
@@ -134,6 +138,7 @@ export default function PageCommande() {
 
   const commander = async () => {
     if (envoi) return // anti double-clic
+    if (avance > 0 && !compris) return // la case "J'ai compris" est obligatoire
     setErreurGlobale('')
 
     if (lignesIndispo.length > 0) {
@@ -191,15 +196,31 @@ export default function PageCommande() {
         <main className="cm-merci">
           <div className="cm-merci-icone" aria-hidden="true"><Icone icone={Check} taille={32} /></div>
           <h1>Merci {confirmation.prenom}, ta commande est reçue</h1>
-          <p className="cm-merci-ref">{referenceCommande(confirmation.numero)} · {formatKMF(confirmation.montant_total)} KMF à payer à la livraison</p>
+          <p className="cm-merci-ref">
+            {referenceCommande(confirmation.numero)}
+            {Number(confirmation.montant_avance_requis) > 0
+              ? <> · Avance à payer : {formatKMF(confirmation.montant_avance_requis)} KMF · Reste à la livraison : {formatKMF(confirmation.montant_a_la_livraison)} KMF</>
+              : <> · {formatKMF(confirmation.montant_total)} KMF à payer à la livraison</>}
+          </p>
 
           <div className="cm-bloc cm-prochaine">
             <h2>La suite</h2>
             <p>
-              Nous t&apos;appelons au <b>{confirmation.telephone}</b> pour confirmer ta commande.
-              Rien n&apos;est acheté avant cet appel.
+              {Number(confirmation.montant_avance_requis) > 0
+                ? <>Paie ton avance (voir ci-dessous). Nous t&apos;appelons ensuite au <b>{confirmation.telephone}</b> pour confirmer ta commande : elle ne peut être confirmée qu&apos;une fois l&apos;avance reçue.</>
+                : <>Nous t&apos;appelons au <b>{confirmation.telephone}</b> pour confirmer ta commande. Rien n&apos;est acheté avant cet appel.</>}
             </p>
           </div>
+
+          {Number(confirmation.montant_avance_requis) > 0 && (
+            <div className="cm-bloc">
+              <h2>Ton avance : {formatKMF(confirmation.montant_avance_requis)} KMF</h2>
+              <InstructionsAvance
+                montant={confirmation.montant_avance_requis}
+                reference={referenceCommande(confirmation.numero)}
+              />
+            </div>
+          )}
 
           <div className="cm-bloc">
             <h2>Ton lien de suivi</h2>
@@ -270,7 +291,15 @@ export default function PageCommande() {
             {!form.ile ? 'Selon ton île' : fraisIle === undefined ? 'Confirmée par téléphone' : fraisIle === 0 ? 'Offerte' : `${formatKMF(fraisIle)} KMF`}
           </dd>
         </div>
-        <div className="cm-total"><dt>Total à payer à la livraison</dt><dd>{formatKMF(total)} KMF</dd></div>
+        {avance > 0 ? (
+          <>
+            <div><dt>Total</dt><dd>{formatKMF(total)} KMF</dd></div>
+            <div><dt>À payer maintenant (avance)</dt><dd>{formatKMF(avance)} KMF</dd></div>
+            <div className="cm-total"><dt>À payer à la livraison</dt><dd>{formatKMF(Math.max(total - avance, 0))} KMF</dd></div>
+          </>
+        ) : (
+          <div className="cm-total"><dt>Total à payer à la livraison</dt><dd>{formatKMF(total)} KMF</dd></div>
+        )}
       </dl>
     </>
   )
@@ -376,10 +405,29 @@ export default function PageCommande() {
             <div className="cm-paiement">
               <span className="cm-paiement-coche" aria-hidden="true"><Icone icone={Check} taille={18} /></span>
               <div>
-                <b>Paiement à la livraison</b>
-                <span>En espèces, quand tu reçois ta commande. Rien à payer aujourd&apos;hui.</span>
+                {avance > 0 ? (
+                  <>
+                    <b>Avance de {formatKMF(avance)} KMF, puis le reste à la livraison</b>
+                    <span>Tu paies l&apos;avance après ta commande (instructions sur la page suivante). Le reste ({formatKMF(Math.max(total - avance, 0))} KMF) se paie en espèces à la livraison.</span>
+                  </>
+                ) : (
+                  <>
+                    <b>Paiement à la livraison</b>
+                    <span>En espèces, quand tu reçois ta commande. Rien à payer aujourd&apos;hui.</span>
+                  </>
+                )}
               </div>
             </div>
+
+            {avance > 0 && (
+              <label className="cm-comprendre">
+                <input type="checkbox" checked={compris} onChange={(e) => setCompris(e.target.checked)} />
+                <span>
+                  J&apos;ai compris : l&apos;avance n&apos;est plus remboursable dès que notre équipe a acheté le produit.
+                  Avant cela, elle est remboursable si j&apos;annule.
+                </span>
+              </label>
+            )}
           </section>
         </div>
 
@@ -392,7 +440,10 @@ export default function PageCommande() {
 
           <div className="cm-validation">
             {erreurGlobale && <p role="alert" className="cm-erreur">{erreurGlobale}</p>}
-            <button onClick={commander} disabled={envoi} className="cm-btn-principal cm-btn-commander">
+            {avance > 0 && !compris && (
+              <p className="cm-rassurance">Coche la case « J&apos;ai compris » dans la partie Paiement pour continuer.</p>
+            )}
+            <button onClick={commander} disabled={envoi || (avance > 0 && !compris)} className="cm-btn-principal cm-btn-commander">
               {envoi ? 'Envoi de ta commande…' : `Confirmer ma commande · ${formatKMF(total)} KMF`}
             </button>
             <p className="cm-rassurance">Tes informations servent uniquement à ta livraison.</p>
@@ -503,6 +554,11 @@ const css = `
     width: 26px; height: 26px; border-radius: 50%; background: ${C.ink}; color: #fff;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   }
+  .cm-comprendre {
+    display: flex; align-items: flex-start; gap: 12px; margin-top: 12px; padding: 12px 16px;
+    border: 1.5px solid ${C.ink}; border-radius: 8px; font-size: 15px; line-height: 1.5; cursor: pointer;
+  }
+  .cm-comprendre input { width: 22px; height: 22px; margin-top: 2px; flex-shrink: 0; accent-color: ${C.ink}; }
   .cm-paiement b { display: block; font-size: 15px; }
   .cm-paiement span { font-size: 14px; color: ${C.inkSoft}; }
 
