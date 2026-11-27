@@ -1,4 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# liko (Salut Marketplace)
+
+Marketplace de précommande pour les Comores : le client commande des produits achetés à l'étranger (Chine, Sénégal, Niger, Émirats, France), suit sa commande jusqu'à la livraison, et l'équipe gère les achats, les envois et les paiements depuis des espaces dédiés.
+
+![Capture](docs/screenshot.png)
+<!-- TODO : ajouter une capture (catalogue ou page de suivi de commande) dans docs/screenshot.png -->
+
+## Contexte
+
+Application destinée à être mise en ligne ; le projet est en cours de développement. Les produits sont achetés après commande, avec un délai de livraison affiché (15 à 30 jours).
+
+## Fonctionnalités principales
+
+- **Catalogue et panier** : produits par catégorie et par origine, photos, panier, tunnel de commande.
+- **Suivi de commande** : frise en 7 étapes (commande reçue, confirmée, achat en cours, expédiée, arrivée aux Comores, en livraison, livrée), page de suivi par code, liste « Mes commandes ».
+- **Paiement avec avance** : avance, remboursement et historique des paiements, confirmation d'une commande bloquée tant que l'avance n'est pas reçue.
+- **Espace collaborateur à l'étranger** : préparation des envois (brouillon, en route, reçu).
+- **Espace collaborateur aux Comores** : réception des envois, avec motif en cas d'écart (manquant, abîmé, erreur du fournisseur, surplus).
+- **Administration** : produits (photos compressées en WebP avant envoi), commandes, collaborateurs, statistiques de ventes et de marge.
+- **Comptes et rôles** : `admin`, `collab_etranger`, `collab_comores`, `client`.
+
+## Stack technique
+
+- Next.js (App Router) 16, React 19, Tailwind CSS 4
+- Supabase : authentification, base PostgreSQL, stockage des photos
+- Zod (validation des requêtes), bcryptjs, libphonenumber-js
+- Vitest, GitHub Actions, déploiement sur Vercel
+
+## Points techniques intéressants
+
+- **Sécurité en base** : RLS et fonctions « guichet » côté Supabase ; la garde de pages côté navigateur ne protège que l'affichage. Le prix d'achat est privé (lecture par fonctions dédiées, test `tests/securite.test.js` qui échoue si une lecture publique peut le laisser fuir), et le navigateur ne peut plus écrire dans la table `users`.
+- **Routes serveur** : corps de requête validés en mode strict avec Zod, limiteur de requêtes en base (migration 08).
+- **Migrations SQL contrôlées** : `scripts/verifier-migrations.mjs` vérifie le nommage, l'absence de trous, l'absence de `DROP`/`TRUNCATE`/`DELETE` non assumés et l'absence de clé secrète.
+- **CI** : tests, build, détection de secrets (gitleaks), `npm audit` et contrôle des migrations ; test de fumée après chaque prévisualisation Vercel.
+- **Tests** : 12 fichiers, 158 tests (panier, commandes, envois, avance, limiteur, validation, sécurité, migrations).
 
 ## Règles du projet
 
@@ -34,37 +68,37 @@ Dependabot (`.github/dependabot.yml`) propose chaque semaine, vers `develop`, un
 
 **Migrations SQL** (`supabase/migrations/`) : format `NN_nom-en-minuscules.sql`, suite sans trou ni doublon, jamais de `DROP TABLE`, `TRUNCATE` ou `DELETE FROM` sans le commentaire `-- DESTRUCTIF ASSUMÉ` sur la ligne juste au-dessus, jamais de clé secrète. Vérification locale : `node scripts/verifier-migrations.mjs`. Node 22 partout (`.nvmrc`, `engines`).
 
-## Getting Started
+## Installation et lancement
 
-First, run the development server:
+Prérequis : Node.js 22 (voir `.nvmrc`) et un projet Supabase.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run dev   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Variables d'environnement (fichier `.env.local`, jamais commité) :
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Le schéma initial n'est pas dans le dépôt : seules les migrations 07 à 11 sont versionnées dans `supabase/migrations/`. `node scripts/verif-cle.js` indique le type de clé présent dans `SUPABASE_SERVICE_ROLE_KEY` sans l'afficher.
 
-## Learn More
+## Tests
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm test                       # vitest, mode watch
+npx vitest run                 # une exécution
+npm run test:couverture        # avec couverture
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Démo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+TODO : ajouter le lien de la démo en ligne.
 
-## Deploy on Vercel
+## Statut
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+En cours de développement (branche `develop`).
